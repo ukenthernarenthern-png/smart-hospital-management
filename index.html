@@ -1,0 +1,3028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartCare AI - Intelligent Hospital Operations Platform</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            clinical: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              800: '#0c4a6e',
+              900: '#082f49',
+            },
+            tealcare: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom subtle animations and clinical accents */
+    .pulse-subtle {
+      animation: pulseSubtle 2.5s infinite;
+    }
+    @keyframes pulseSubtle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.88; transform: scale(1.02); }
+    }
+    .badge-esi-1 { background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
+    .badge-esi-2 { background-color: #ffedd5; color: #9a3412; border: 1px solid #fb923c; }
+    .badge-esi-3 { background-color: #fef9c3; color: #854d0e; border: 1px solid #facc15; }
+    .badge-esi-4 { background-color: #ecfccb; color: #3f6212; border: 1px solid #a3e635; }
+    .badge-esi-5 { background-color: #e0f2fe; color: #075985; border: 1px solid #38bdf8; }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+
+  <!-- TOP CLINICAL ALERT & DEMO BANNER -->
+  <div class="bg-amber-500 text-white text-xs font-medium py-1.5 px-4 shadow-sm flex flex-wrap items-center justify-between border-b border-amber-600">
+    <div class="flex items-center space-x-2">
+      <span class="bg-amber-700 uppercase tracking-wider text-[10px] font-bold px-1.5 py-0.5 rounded">Fictional Demo Data</span>
+      <span><strong>Hackathon Project:</strong> SmartCare AI — Overcrowded Hospitals, Limited Resources: Doing More With What Exists</span>
+    </div>
+    <div class="flex items-center space-x-4 mt-1 sm:mt-0 text-[11px]">
+      <span class="hidden md:inline"><i class="fa-solid fa-shield-heart mr-1"></i> Clinical Safety Safeguard: Heuristic DSS does not replace physician triage judgment</span>
+      <span id="live-clock" class="font-mono bg-amber-600 px-2 py-0.5 rounded">--:--:--</span>
+    </div>
+  </div>
+
+  <!-- HEADER NAVIGATION -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Logo & Branding -->
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-clinical-600 to-tealcare-500 flex items-center justify-center text-white shadow-md shadow-clinical-500/20">
+            <i class="fa-solid fa-hospital text-xl"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xl font-extrabold tracking-tight text-slate-900">SmartCare <span class="text-clinical-600">AI</span></span>
+              <span class="bg-clinical-50 text-clinical-700 text-[11px] font-bold px-2 py-0.5 rounded-full border border-clinical-200">OPS-v1.0</span>
+            </div>
+            <p class="text-[11px] text-slate-500 hidden sm:block">Intelligent Hospital Capacity & Resource Coordination Platform</p>
+          </div>
+        </div>
+
+        <!-- SCENARIO SWITCHER (Core Interactive Hackathon Requirement) -->
+        <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
+          <span class="text-xs font-semibold text-slate-500 px-2 hidden lg:inline"><i class="fa-solid fa-sliders mr-1"></i> Scenario:</span>
+          
+          <button id="scenario-btn-normal" onclick="switchScenario('normal')" class="scenario-pill flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 bg-white text-emerald-700 shadow-sm border border-emerald-200">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>Normal Day</span>
+          </button>
+          
+          <button id="scenario-btn-busy" onclick="switchScenario('busy')" class="scenario-pill flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition-all duration-200">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span>Busy Day</span>
+          </button>
+
+          <button id="scenario-btn-surge" onclick="switchScenario('surge')" class="scenario-pill flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition-all duration-200">
+            <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+            <span>Arrival Surge</span>
+          </button>
+        </div>
+
+        <!-- Quick Action Trigger & Mode Toggle -->
+        <div class="flex items-center space-x-2">
+          <button onclick="openAdmitModal()" class="hidden sm:flex items-center space-x-1.5 bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-sm transition">
+            <i class="fa-solid fa-user-plus"></i>
+            <span>Simulate Patient</span>
+          </button>
+          
+          <button onclick="openSmartMatchModal()" class="flex items-center space-x-1.5 bg-tealcare-600 hover:bg-tealcare-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-sm transition">
+            <i class="fa-solid fa-bed"></i>
+            <span>Match Bed</span>
+          </button>
+
+          <button onclick="saveDataToLaptop(true)" class="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-sm transition" title="Save current patient and operations data directly to your laptop's data/ folder">
+            <i class="fa-solid fa-floppy-disk text-tealcare-400"></i>
+            <span class="hidden md:inline">Save to Laptop</span>
+          </button>
+
+          <button onclick="syncFromExcelFile(true)" class="flex items-center space-x-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-sm transition" title="Sync and reload patients directly from your laptop's Excel spreadsheet (patients.csv)">
+            <i class="fa-solid fa-file-excel text-emerald-300"></i>
+            <span class="hidden md:inline">Sync from Excel</span>
+          </button>
+
+          <input type="file" id="file-upload-excel" accept=".csv" onchange="handleExcelFileUpload(event)" class="hidden">
+
+          <!-- API Indicator / Source Pill -->
+          <div id="api-status-pill" onclick="toggleApiMode()" title="Click to switch between Browser Mock Engine and Flask Backend API" class="cursor-pointer flex items-center space-x-1 text-[11px] font-mono px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-300">
+            <i class="fa-solid fa-circle text-[8px] text-emerald-500"></i>
+            <span id="api-status-text">Client Simulator</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex space-x-1 sm:space-x-4 border-t border-slate-100 overflow-x-auto py-1 text-sm font-medium">
+        <button onclick="setActiveTab('overview')" id="tab-btn-overview" class="tab-button active flex items-center space-x-2 py-2 px-3 border-b-2 border-clinical-600 text-clinical-600 font-semibold whitespace-nowrap">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Overview Dashboard</span>
+        </button>
+        <button onclick="setActiveTab('patient-flow')" id="tab-btn-patient-flow" class="tab-button flex items-center space-x-2 py-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">
+          <i class="fa-solid fa-route"></i>
+          <span>Patient Flow & Triage</span>
+          <span id="badge-flow-count" class="bg-slate-200 text-slate-700 text-[10px] px-1.5 py-0.2 rounded-full font-bold">28</span>
+        </button>
+        <button onclick="setActiveTab('bed-management')" id="tab-btn-bed-management" class="tab-button flex items-center space-x-2 py-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">
+          <i class="fa-solid fa-bed-pulse"></i>
+          <span>Bed Management</span>
+          <span id="badge-avail-beds" class="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.2 rounded-full font-bold">40 Free</span>
+        </button>
+        <button onclick="setActiveTab('resources')" id="tab-btn-resources" class="tab-button flex items-center space-x-2 py-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">
+          <i class="fa-solid fa-microscope"></i>
+          <span>Resource Utilization</span>
+        </button>
+        <button onclick="setActiveTab('recommendations')" id="tab-btn-recommendations" class="tab-button flex items-center space-x-2 py-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap relative">
+          <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
+          <span>AI Recommendations</span>
+          <span id="badge-rec-count" class="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.2 rounded-full font-bold">2 Active</span>
+        </button>
+        <button onclick="setActiveTab('data-storage')" id="tab-btn-data-storage" class="tab-button flex items-center space-x-2 py-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">
+          <i class="fa-solid fa-hard-drive text-clinical-600"></i>
+          <span>Laptop Data Storage</span>
+          <span class="bg-clinical-100 text-clinical-800 text-[10px] px-1.5 py-0.2 rounded-full font-bold">CSV / JSON</span>
+        </button>
+        <button onclick="setActiveTab('forecasting-model')" id="tab-btn-forecasting-model" class="tab-button flex items-center space-x-2 py-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">
+          <i class="fa-solid fa-brain"></i>
+          <span>Forecasting & Model Info</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- LIVE HOSPITAL TELEMETRY & AMBULANCE FEED -->
+    <div class="mb-4 bg-slate-900 text-white p-3 rounded-xl shadow-md border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs">
+      <div class="flex flex-wrap items-center gap-2">
+        <button id="btn-toggle-live-stream" onclick="toggleLiveStreaming()" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold transition shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+          <span id="live-stream-btn-text">🔴 LIVE STREAM: ACTIVE</span>
+        </button>
+        <div class="flex items-center space-x-1.5 font-semibold text-slate-300">
+          <i class="fa-solid fa-hospital text-tealcare-400"></i>
+          <span class="text-slate-400 text-[11px]">Facility:</span>
+          <select id="select-active-hospital" onchange="switchHospitalFacility(this.value)" class="bg-slate-800 border border-slate-700 text-white rounded-lg px-2.5 py-1 text-xs focus:outline-none focus:border-clinical-500 font-medium cursor-pointer">
+            <option value="metro">🏥 Metro General Hospital & Level-1 Trauma (320 Beds)</option>
+            <option value="stjude">🏥 St. Jude Community Medical Center (220 Beds)</option>
+            <option value="mercy">🏥 Mercy Regional Specialty Care (180 Beds)</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- Live Ticker stream -->
+      <div class="flex-1 overflow-hidden px-2 font-mono text-[11px] text-tealcare-300 flex items-center space-x-2 min-w-0">
+        <span class="bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold shrink-0">Live Event Feed</span>
+        <div id="live-telemetry-ticker" class="truncate">
+          🚑 [AMB-104 ETA 3m] Code STEMI inbound to Trauma Bay 1 &bull; 🛏️ Bed MED-A-14 sanitized & available &bull; 🧪 Stat Troponin lab completed for PAT-0012
+        </div>
+      </div>
+
+      <div class="hidden lg:flex items-center space-x-2 text-[10px] text-slate-400 font-mono shrink-0">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span>HL7 / FHIR Real-Time Link</span>
+      </div>
+    </div>
+
+    <!-- ACTIVE SCENARIO STATUS BANNER -->
+    <div id="scenario-summary-banner" class="mb-6 p-4 rounded-xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white shadow-sm transition-all duration-300">
+      <div class="flex items-start space-x-3">
+        <div id="scenario-icon-box" class="w-10 h-10 rounded-lg flex items-center justify-center text-lg bg-emerald-100 text-emerald-700">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h2 id="scenario-title" class="text-base font-bold text-slate-900">Current Simulation: Normal Day</h2>
+            <span id="scenario-badge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Capacity Stable</span>
+          </div>
+          <p id="scenario-desc" class="text-xs text-slate-600 mt-0.5">Baseline hospital flow with steady arrival rates and typical ward turnaround. Resources operating within target tolerances.</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
+        <div class="text-right">
+          <div class="text-xs text-slate-500 font-medium">Predicted Inflow (Next 4h)</div>
+          <div id="stat-expected-4h" class="text-base font-mono font-bold text-clinical-600">+28 Patients</div>
+        </div>
+        <div class="h-8 w-px bg-slate-200"></div>
+        <div class="text-right">
+          <div class="text-xs text-slate-500 font-medium">Bottleneck Index</div>
+          <div id="stat-bottleneck-idx" class="text-base font-mono font-bold text-emerald-600">Low (1 Minor)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATION TOAST CONTAINER -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <!-- ======================================================== -->
+    <!-- TAB 1: OVERVIEW DASHBOARD -->
+    <!-- ======================================================== -->
+    <section id="tab-overview" class="space-y-6">
+      
+      <!-- TOP METRIC CARDS (Requirement 2: Total beds, occupied beds, available beds, arrivals, waiting times) -->
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+        
+        <!-- Total Beds -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Total Beds</span>
+            <i class="fa-solid fa-hospital-user text-slate-400"></i>
+          </div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <span id="card-total-beds" class="text-2xl font-extrabold font-mono text-slate-900">280</span>
+            <span class="text-[10px] text-slate-400 font-mono">7 Wards</span>
+          </div>
+          <div class="mt-1 text-[11px] text-slate-500">Licensed facility capacity</div>
+        </div>
+
+        <!-- Occupied Beds -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Occupied Beds</span>
+            <i class="fa-solid fa-bed text-rose-500"></i>
+          </div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <span id="card-occupied-beds" class="text-2xl font-extrabold font-mono text-slate-900">218</span>
+            <span id="card-occupancy-pct" class="text-xs font-bold font-mono text-slate-600">77.8%</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-1.5 mt-1 overflow-hidden">
+            <div id="bar-occupancy" class="bg-clinical-500 h-1.5 rounded-full transition-all duration-500" style="width: 77.8%"></div>
+          </div>
+        </div>
+
+        <!-- Available Beds -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Available Beds</span>
+            <i class="fa-solid fa-circle-check text-emerald-500"></i>
+          </div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <span id="card-avail-beds" class="text-2xl font-extrabold font-mono text-emerald-600">40</span>
+            <span id="card-cleaning-beds" class="text-[11px] font-mono text-amber-600">14 In Cleaning</span>
+          </div>
+          <div class="mt-1 text-[11px] text-emerald-700 font-medium">Ready for immediate placement</div>
+        </div>
+
+        <!-- Expected Arrivals 24h -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Expected Arrivals</span>
+            <i class="fa-solid fa-chart-line text-clinical-600"></i>
+          </div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <span id="card-expected-24h" class="text-2xl font-extrabold font-mono text-slate-900">142</span>
+            <span class="text-[10px] text-slate-500 font-mono">24h Forecast</span>
+          </div>
+          <div class="mt-1 text-[11px] text-slate-500">ED + Direct Admissions</div>
+        </div>
+
+        <!-- Emergency Wait Time -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>ED Door-to-Doctor</span>
+            <i class="fa-solid fa-clock text-clinical-600"></i>
+          </div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <span id="card-wait-ed" class="text-2xl font-extrabold font-mono text-slate-900">34 <span class="text-xs font-sans font-normal text-slate-500">m</span></span>
+            <span id="badge-wait-ed-status" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">Target &lt;45m</span>
+          </div>
+          <div class="mt-1 text-[11px] text-slate-500">Triage Level 3 Median</div>
+        </div>
+
+        <!-- Bed Placement Wait Time -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Bed Placement Wait</span>
+            <i class="fa-solid fa-hourglass-half text-amber-500"></i>
+          </div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <span id="card-wait-placement" class="text-2xl font-extrabold font-mono text-slate-900">48 <span class="text-xs font-sans font-normal text-slate-500">m</span></span>
+            <span id="badge-placement-status" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">Flow Smooth</span>
+          </div>
+          <div class="mt-1 text-[11px] text-slate-500">From admit order to transfer</div>
+        </div>
+
+      </div>
+
+      <!-- OPERATIONAL ALERTS BANNER -->
+      <div id="alerts-container" class="space-y-2">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- CHARTS ROW 1: 24h Arrival Forecast & Department Occupancy Breakdown -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Arrival Forecasting Chart (2 cols) -->
+        <div class="lg:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex flex-wrap items-center justify-between pb-3 border-b border-slate-100 gap-2">
+            <div>
+              <div class="flex items-center space-x-2">
+                <h3 class="font-bold text-slate-900 text-sm">24-Hour Patient Arrival Forecast & Historical Actuals</h3>
+                <span class="bg-clinical-50 text-clinical-700 text-[10px] font-bold px-2 py-0.5 rounded border border-clinical-200">Predictive Engine</span>
+              </div>
+              <p class="text-xs text-slate-500">Hourly projected emergency & direct admissions with 95% confidence boundary</p>
+            </div>
+            <div class="flex items-center space-x-3 text-xs font-medium">
+              <span class="flex items-center space-x-1"><span class="w-3 h-3 bg-clinical-500 rounded-sm"></span> <span>Predicted</span></span>
+              <span class="flex items-center space-x-1"><span class="w-3 h-3 bg-emerald-500 rounded-full"></span> <span>Actuals</span></span>
+            </div>
+          </div>
+          <div class="h-64 mt-4 relative">
+            <canvas id="chart-arrival-forecast"></canvas>
+          </div>
+        </div>
+
+        <!-- Ward Occupancy Bar Chart (1 col) -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm">Ward Occupancy Heatmap</h3>
+              <p class="text-xs text-slate-500">Real-time bed utilization across 7 clinical units</p>
+            </div>
+            <span class="text-xs text-slate-400 font-mono">Beds</span>
+          </div>
+          <div class="h-64 mt-4 relative">
+            <canvas id="chart-ward-occupancy"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ROW 2: ACTIVE BOTTLENECK DETECTOR & FAST ACTION HIGHLIGHTS -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Active Bottlenecks Detected -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div class="flex items-center space-x-2">
+              <div class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></div>
+              <h3 class="font-bold text-slate-900 text-sm">Real-Time Bottleneck Detection</h3>
+            </div>
+            <span class="text-xs text-slate-500">Heuristic Dwell Time Monitor</span>
+          </div>
+          <div id="bottlenecks-list" class="divide-y divide-slate-100 mt-2">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Recommended Capacity Actions Preview -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div class="flex items-center space-x-2">
+              <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
+              <h3 class="font-bold text-slate-900 text-sm">Top Recommended Proactive Actions</h3>
+            </div>
+            <button onclick="setActiveTab('recommendations')" class="text-xs font-semibold text-clinical-600 hover:text-clinical-700">View All Actions &rarr;</button>
+          </div>
+          <div id="overview-rec-list" class="space-y-3 mt-3">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 2: PATIENT FLOW & TRIAGE -->
+    <!-- ======================================================== -->
+    <section id="tab-patient-flow" class="hidden space-y-6">
+      
+      <!-- FLOW PIPELINE CARDS -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
+          <div>
+            <h3 class="font-bold text-slate-900 text-base">End-to-End Hospital Patient Flow Pipeline</h3>
+            <p class="text-xs text-slate-500">Tracking throughput velocity, stage dwell times, and queue blockages</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="openAdmitModal()" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+              <i class="fa-solid fa-plus mr-1"></i> Add Influx Patient
+            </button>
+          </div>
+        </div>
+
+        <!-- 5-Stage Visual Pipeline -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-3 mt-4 text-center">
+          
+          <!-- Stage 1 -->
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Stage 1</div>
+            <div class="font-bold text-sm text-slate-800 mt-1">Arrival & Registration</div>
+            <div id="pipe-count-arrival" class="text-2xl font-black font-mono text-clinical-600 my-2">12</div>
+            <div class="text-xs text-slate-500">Avg Dwell: <span id="pipe-time-arrival" class="font-mono font-semibold">6m</span></div>
+            <div class="mt-2 text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold inline-block">Throughput Normal</div>
+          </div>
+
+          <!-- Stage 2 -->
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Stage 2</div>
+            <div class="font-bold text-sm text-slate-800 mt-1">Clinical Triage (ESI)</div>
+            <div id="pipe-count-triage" class="text-2xl font-black font-mono text-clinical-600 my-2">9</div>
+            <div class="text-xs text-slate-500">Avg Wait: <span id="pipe-time-triage" class="font-mono font-semibold">8m</span></div>
+            <div class="mt-2 text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold inline-block">Triage Flow Good</div>
+          </div>
+
+          <!-- Stage 3 -->
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl relative">
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Stage 3</div>
+            <div class="font-bold text-sm text-slate-800 mt-1">Diagnostics / Imaging</div>
+            <div id="pipe-count-diag" class="text-2xl font-black font-mono text-amber-600 my-2">18</div>
+            <div class="text-xs text-slate-500">Avg Cycle: <span id="pipe-time-diag" class="font-mono font-semibold">32m</span></div>
+            <div id="pipe-status-diag" class="mt-2 text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold inline-block">Queue Backlog</div>
+          </div>
+
+          <!-- Stage 4 -->
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Stage 4</div>
+            <div class="font-bold text-sm text-slate-800 mt-1">Emergency Treatment</div>
+            <div id="pipe-count-treat" class="text-2xl font-black font-mono text-clinical-600 my-2">34</div>
+            <div class="text-xs text-slate-500">Active Bays: <span id="pipe-time-treat" class="font-mono font-semibold">34/45</span></div>
+            <div class="mt-2 text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold inline-block">Bays Assigned</div>
+          </div>
+
+          <!-- Stage 5 -->
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Stage 5</div>
+            <div class="font-bold text-sm text-slate-800 mt-1">Admission Boarding / Discharge</div>
+            <div id="pipe-count-board" class="text-2xl font-black font-mono text-rose-600 my-2">14</div>
+            <div class="text-xs text-slate-500">Boarding Dwell: <span id="pipe-time-board" class="font-mono font-semibold">48m</span></div>
+            <div id="pipe-status-board" class="mt-2 text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold inline-block">Awaiting Beds</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- CHART: Average Wait Times by Clinical Stage -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <h3 class="font-bold text-slate-900 text-sm mb-1">Stage Wait Times vs Operational Benchmarks (Minutes)</h3>
+          <p class="text-xs text-slate-500 mb-4">Calculated dynamically via Little's Law queue modeling</p>
+          <div class="h-60 relative">
+            <canvas id="chart-flow-stages"></canvas>
+          </div>
+        </div>
+
+        <!-- TRIAGE ACUITY BREAKDOWN (ESI 1 to 5) -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm mb-1">Triage Acuity Distribution (ESI 1-5)</h3>
+            <p class="text-xs text-slate-500 mb-3">Clinical urgency hierarchy for arrival queue management</p>
+            <div class="space-y-2 text-xs">
+              <div class="flex items-center justify-between p-2 rounded-lg bg-red-50 border border-red-200">
+                <span class="font-bold text-red-800"><span class="badge-esi-1 px-1.5 py-0.5 rounded font-mono mr-1">ESI-1</span> Resuscitation (Immediate)</span>
+                <span id="esi-count-1" class="font-mono font-bold text-red-900">2 Patients</span>
+              </div>
+              <div class="flex items-center justify-between p-2 rounded-lg bg-orange-50 border border-orange-200">
+                <span class="font-bold text-orange-800"><span class="badge-esi-2 px-1.5 py-0.5 rounded font-mono mr-1">ESI-2</span> Emergent (High Risk)</span>
+                <span id="esi-count-2" class="font-mono font-bold text-orange-900">9 Patients</span>
+              </div>
+              <div class="flex items-center justify-between p-2 rounded-lg bg-yellow-50 border border-yellow-200">
+                <span class="font-bold text-yellow-800"><span class="badge-esi-3 px-1.5 py-0.5 rounded font-mono mr-1">ESI-3</span> Urgent (Multi-Resource)</span>
+                <span id="esi-count-3" class="font-mono font-bold text-yellow-900">22 Patients</span>
+              </div>
+              <div class="flex items-center justify-between p-2 rounded-lg bg-lime-50 border border-lime-200">
+                <span class="font-bold text-lime-800"><span class="badge-esi-4 px-1.5 py-0.5 rounded font-mono mr-1">ESI-4</span> Less Urgent (Simple Rx)</span>
+                <span id="esi-count-4" class="font-mono font-bold text-lime-900">14 Patients</span>
+              </div>
+              <div class="flex items-center justify-between p-2 rounded-lg bg-sky-50 border border-sky-200">
+                <span class="font-bold text-sky-800"><span class="badge-esi-5 px-1.5 py-0.5 rounded font-mono mr-1">ESI-5</span> Non-Urgent (Refill/Minor)</span>
+                <span id="esi-count-5" class="font-mono font-bold text-sky-900">6 Patients</span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 p-2 bg-slate-50 rounded text-[11px] text-slate-500 border border-slate-200">
+            <i class="fa-solid fa-circle-info text-clinical-600 mr-1"></i> ESI 1 & 2 patients always bypass queue delays and receive priority bed allocation.
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVE PATIENT QUEUE TABLE -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm">Active Inpatient & Emergency Flow Roster</h3>
+            <p class="text-xs text-slate-500">Live roster of patients currently navigating admission, diagnostic testing, or discharge</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <select id="filter-patient-stage" onchange="renderPatientsTable()" class="text-xs bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700">
+              <option value="all">All Patient Stages</option>
+              <option value="Triage">Triage</option>
+              <option value="Diagnostics">Diagnostics</option>
+              <option value="Treatment">Treatment</option>
+              <option value="Boarding">Boarding for Bed</option>
+              <option value="Discharge-Ready">Discharge-Ready</option>
+            </select>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold">
+                <th class="py-3 px-4">Patient / MRN</th>
+                <th class="py-3 px-4">Acuity</th>
+                <th class="py-3 px-4">Chief Complaint</th>
+                <th class="py-3 px-4">Current Department</th>
+                <th class="py-3 px-4">Assigned Bed</th>
+                <th class="py-3 px-4">Current Stage</th>
+                <th class="py-3 px-4">Admission Dwell</th>
+                <th class="py-3 px-4 text-right">Clinical Action</th>
+              </tr>
+            </thead>
+            <tbody id="patient-table-body" class="divide-y divide-slate-100 font-medium">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 3: BED MANAGEMENT -->
+    <!-- ======================================================== -->
+    <section id="tab-bed-management" class="hidden space-y-6">
+      
+      <!-- BED OPERATIONS HEADER & QUICK FILTERS -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center space-x-2">
+            <h3 class="font-bold text-slate-900 text-base">Dynamic Ward & Bed Coordination Matrix</h3>
+            <span class="bg-tealcare-50 text-tealcare-700 text-[11px] font-bold px-2 py-0.5 rounded border border-tealcare-200">Real-Time Turnaround</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-0.5">Track bed occupancy, accelerate dirty bed cleaning, and execute discharge readiness</p>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="filter-bed-ward" onchange="renderBedMatrix()" class="text-xs bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-slate-700 font-medium">
+            <option value="all">All Wards (7 Units)</option>
+            <option value="ED">Emergency Department (ED)</option>
+            <option value="ICU">Intensive Care Unit (ICU)</option>
+            <option value="MED-A">General Medicine A</option>
+            <option value="MED-B">General Medicine B</option>
+            <option value="SURG">Surgical Recovery & Step-Down</option>
+            <option value="OBS">Short-Stay Observation</option>
+            <option value="PED">Pediatrics</option>
+          </select>
+
+          <select id="filter-bed-status" onchange="renderBedMatrix()" class="text-xs bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-slate-700 font-medium">
+            <option value="all">All Bed Statuses</option>
+            <option value="Available">Available (Empty)</option>
+            <option value="Occupied">Occupied</option>
+            <option value="Cleaning">In Cleaning / Turnover</option>
+            <option value="Reserved">Reserved for Transfer</option>
+          </select>
+
+          <button onclick="cleanAllBeds()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition">
+            <i class="fa-solid fa-broom mr-1"></i> Expedite Cleanings
+          </button>
+        </div>
+      </div>
+
+      <!-- SUMMARY KPI PILLS -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] text-slate-500 font-medium">Available (Ready)</div>
+            <div id="stat-pill-avail" class="text-xl font-bold font-mono text-emerald-600">40</div>
+          </div>
+          <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+        </div>
+        <div class="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] text-slate-500 font-medium">Occupied</div>
+            <div id="stat-pill-occ" class="text-xl font-bold font-mono text-slate-800">218</div>
+          </div>
+          <div class="w-3 h-3 rounded-full bg-clinical-600"></div>
+        </div>
+        <div class="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] text-slate-500 font-medium">In Cleaning (EVS)</div>
+            <div id="stat-pill-clean" class="text-xl font-bold font-mono text-amber-600">14</div>
+          </div>
+          <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+        </div>
+        <div class="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] text-slate-500 font-medium">Discharge-Ready</div>
+            <div id="stat-pill-discharge-ready" class="text-xl font-bold font-mono text-purple-600">11</div>
+          </div>
+          <div class="w-3 h-3 rounded-full bg-purple-500"></div>
+        </div>
+      </div>
+
+      <!-- INTERACTIVE BED TILES GRID -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+          <div class="text-xs text-slate-500">
+            Click on any bed to inspect clinical details, discharge patient, or accelerate cleaning turnaround.
+          </div>
+          <div class="flex items-center space-x-3 text-[11px] font-medium text-slate-600">
+            <span class="flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> <span>Available</span></span>
+            <span class="flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded-full bg-slate-800"></span> <span>Occupied</span></span>
+            <span class="flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> <span>Cleaning</span></span>
+            <span class="flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> <span>Discharge-Ready</span></span>
+          </div>
+        </div>
+
+        <!-- Bed Cards Grid -->
+        <div id="bed-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 max-h-[640px] overflow-y-auto pr-1">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 4: RESOURCE UTILIZATION -->
+    <!-- ======================================================== -->
+    <section id="tab-resources" class="hidden space-y-6">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- DIAGNOSTIC IMAGING QUEUE MONITOR -->
+        <div class="lg:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <h3 class="font-bold text-slate-900 text-base">Diagnostic Equipment & Scan Queues</h3>
+              <p class="text-xs text-slate-500">Preventing emergency department boarding by smoothing radiology bottlenecks</p>
+            </div>
+            <button onclick="balanceRadiologyQueue()" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+              <i class="fa-solid fa-arrows-split-up-and-left mr-1"></i> Balance Scanners
+            </button>
+          </div>
+
+          <div id="resources-list" class="divide-y divide-slate-100 mt-3">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- STAFFING RATIOS & FLOAT POOL TRACKER -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 class="font-bold text-slate-900 text-base">Clinical Staff Coverage</h3>
+              <span class="text-xs text-slate-400 font-mono">Shift 07:00-19:00</span>
+            </div>
+
+            <div class="mt-4 space-y-4">
+              
+              <!-- ED Ratio -->
+              <div>
+                <div class="flex justify-between text-xs font-medium mb-1">
+                  <span>Emergency Dept Nursing</span>
+                  <span id="ratio-ed" class="font-mono font-bold text-slate-800">1:3.2 <span class="text-[10px] text-slate-400">(Target 1:3.0)</span></span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                  <div id="bar-ratio-ed" class="bg-clinical-600 h-2 rounded-full" style="width: 82%"></div>
+                </div>
+              </div>
+
+              <!-- ICU Ratio -->
+              <div>
+                <div class="flex justify-between text-xs font-medium mb-1">
+                  <span>Intensive Care Unit (ICU)</span>
+                  <span id="ratio-icu" class="font-mono font-bold text-slate-800">1:1.0 <span class="text-[10px] text-emerald-600 font-bold">(Optimal 1:1)</span></span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                  <div id="bar-ratio-icu" class="bg-emerald-500 h-2 rounded-full" style="width: 100%"></div>
+                </div>
+              </div>
+
+              <!-- General Medicine Ratio -->
+              <div>
+                <div class="flex justify-between text-xs font-medium mb-1">
+                  <span>General Medical Floors</span>
+                  <span id="ratio-med" class="font-mono font-bold text-slate-800">1:4.8 <span class="text-[10px] text-slate-400">(Target 1:5.0)</span></span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                  <div id="bar-ratio-med" class="bg-clinical-600 h-2 rounded-full" style="width: 75%"></div>
+                </div>
+              </div>
+
+              <!-- Float Pool Capacity -->
+              <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="font-semibold text-slate-800"><i class="fa-solid fa-people-arrows text-tealcare-600 mr-1.5"></i> Float Nursing Pool</span>
+                  <span id="stat-float-pool" class="font-mono font-bold text-tealcare-700">4 / 6 Active</span>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-1">2 float nurses available for surge re-deployment to Emergency or Step-Down.</p>
+                <button onclick="deployFloatNurse()" class="mt-2 w-full py-1.5 bg-tealcare-600 hover:bg-tealcare-700 text-white rounded text-xs font-medium transition">
+                  Deploy Float Nurse to ED Triage
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="text-[11px] text-slate-400 pt-3 border-t border-slate-100 mt-4">
+            <i class="fa-solid fa-user-shield text-slate-500 mr-1"></i> Ratios conform strictly to state mandated clinical safety minimums.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- INTERNAL LOGISTICS & TRANSPORT SQUAD -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <h3 class="font-bold text-slate-900 text-sm mb-3">Internal Hospital Transport & Logistics Fleet</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+          
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+            <div class="flex justify-between items-center">
+              <span class="font-semibold text-slate-700">Patient Escort Transporters</span>
+              <span class="font-mono font-bold text-clinical-600">12 On Duty</span>
+            </div>
+            <div class="mt-2 text-slate-500">Active transfers: 7 | Pending dispatches: 3</div>
+          </div>
+
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+            <div class="flex justify-between items-center">
+              <span class="font-semibold text-slate-700">Wheelchair & Gurney Fleet</span>
+              <span class="font-mono font-bold text-emerald-600">38 Deployed / 6 Reserve</span>
+            </div>
+            <div class="mt-2 text-slate-500">Asset tracking beacon accuracy: 98%</div>
+          </div>
+
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+            <div class="flex justify-between items-center">
+              <span class="font-semibold text-slate-700">Environmental Sanitation (EVS)</span>
+              <span class="font-mono font-bold text-amber-600">14 Cleaners Active</span>
+            </div>
+            <div class="mt-2 text-slate-500">Average terminal bed clean: 22 mins</div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 5: AI RECOMMENDATIONS (Core Hackathon Requirement) -->
+    <!-- ======================================================== -->
+    <section id="tab-recommendations" class="hidden space-y-6">
+      
+      <div class="bg-gradient-to-r from-clinical-900 via-clinical-800 to-tealcare-900 text-white p-6 rounded-2xl shadow-md">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="bg-tealcare-400 text-slate-900 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Clinical Decision Support</span>
+              <span class="text-xs text-tealcare-200">Algorithmic Capacity Optimizer</span>
+            </div>
+            <h2 class="text-xl font-extrabold mt-1 tracking-tight">Proactive Capacity Coordination Engine</h2>
+            <p class="text-xs text-slate-200 max-w-2xl mt-1">
+              "Don't Just Add Capacity. Make Existing Capacity Work Smarter."
+              Anticipating bed bottlenecks, smoothing diagnostic queues, and prioritizing clinically validated discharges before gridlock occurs.
+            </p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="applyAllRecommendations()" class="bg-tealcare-500 hover:bg-tealcare-400 text-slate-950 font-bold text-xs px-4 py-2.5 rounded-xl shadow-lg transition flex items-center space-x-2">
+              <i class="fa-solid fa-play"></i>
+              <span>Execute All Recommendations</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECOMMENDATION CARDS CONTAINER -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="recommendations-full-grid">
+        <!-- Dynamically rendered -->
+      </div>
+
+      <!-- AUDIT TRAIL / ACTION LOG -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-clock-rotate-left text-slate-500"></i>
+            <h3 class="font-bold text-slate-900 text-sm">Real-Time Operational Action Log & Impact Audit</h3>
+          </div>
+          <span class="text-xs text-slate-400">Chronological Event Stream</span>
+        </div>
+        <div id="action-log-list" class="divide-y divide-slate-100 max-h-60 overflow-y-auto mt-2 text-xs font-mono">
+          <!-- Dynamically added -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 6: FORECASTING & MODEL TRANSPARENCY (Requirement 11) -->
+    <!-- ======================================================== -->
+    <section id="tab-forecasting-model" class="hidden space-y-6">
+      
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+        
+        <div class="border-b border-slate-200 pb-4">
+          <div class="flex items-center space-x-2">
+            <span class="bg-amber-100 text-amber-800 text-[11px] font-bold px-2 py-0.5 rounded border border-amber-200">Requirement 11 Compliance</span>
+            <h2 class="text-lg font-bold text-slate-900">Predictive Methodology & Model Transparency</h2>
+          </div>
+          <p class="text-xs text-slate-600 mt-1">
+            Ethical AI & Clinical Governance: SmartCare AI uses transparent, deterministic queueing models and heuristic heuristics.
+            We explicitly delineate simulated heuristics from production machine learning models to prevent false claims of black-box prediction.
+          </p>
+        </div>
+
+        <!-- 3 Mathematical Pillars Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          
+          <!-- Pillar 1 -->
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <div class="w-8 h-8 rounded-lg bg-clinical-100 text-clinical-700 flex items-center justify-center font-bold text-sm mb-2">1</div>
+            <h3 class="font-bold text-slate-900 text-sm">Arrival Forecasting (Poisson Process)</h3>
+            <p class="text-xs text-slate-600 mt-1">
+              Arrivals are modeled using a non-homogeneous Poisson process $\lambda(t)$ modulated by historical time-of-day diurnal patterns and day-of-week multipliers:
+            </p>
+            <div class="bg-white p-2.5 rounded border border-slate-200 font-mono text-[11px] text-slate-700 my-2">
+              P(N(t) = k) = ( &lambda;(t)^k &middot; e^(-&lambda;(t)) ) / k!
+            </div>
+            <p class="text-[11px] text-slate-500">
+              In a production enterprise deployment, this is enhanced by an ensemble of XGBoost and Facebook Prophet trained on 3+ years of electronic health records (EHR).
+            </p>
+          </div>
+
+          <!-- Pillar 2 -->
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <div class="w-8 h-8 rounded-lg bg-tealcare-100 text-tealcare-700 flex items-center justify-center font-bold text-sm mb-2">2</div>
+            <h3 class="font-bold text-slate-900 text-sm">Waiting Time Prediction (Little's Law)</h3>
+            <p class="text-xs text-slate-600 mt-1">
+              Department dwell time and bottleneck detection utilize queueing theory's fundamental Little's Law:
+            </p>
+            <div class="bg-white p-2.5 rounded border border-slate-200 font-mono text-[11px] text-slate-700 my-2">
+              L = &lambda; &middot; W &nbsp;&rArr;&nbsp; W = L / &lambda;
+            </div>
+            <p class="text-[11px] text-slate-500">
+              Where $L$ represents current queue length in the department, $\lambda$ is the service throughput, and $W$ is estimated waiting time.
+            </p>
+          </div>
+
+          <!-- Pillar 3 -->
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-sm mb-2">3</div>
+            <h3 class="font-bold text-slate-900 text-sm">Safe Capacity Matching Matrix</h3>
+            <p class="text-xs text-slate-600 mt-1">
+              Dynamic bed reallocation evaluates hard clinical constraints to ensure patient safety before recommending transfers:
+            </p>
+            <ul class="text-[11px] text-slate-600 space-y-1 my-2 list-disc list-inside">
+              <li>Acuity check: ESI 1/2 never assigned to low-acuity observation</li>
+              <li>Infection isolation constraints (airborne / contact)</li>
+              <li>Telemetry and ventilator hardware availability</li>
+              <li>Mandated nurse-to-patient staffing ratio thresholds</li>
+            </ul>
+          </div>
+
+        </div>
+
+        <!-- Technical Architecture Overview -->
+        <div class="p-4 bg-slate-900 text-white rounded-xl">
+          <div class="flex items-center justify-between mb-2">
+            <div class="font-bold text-sm flex items-center space-x-2">
+              <i class="fa-solid fa-code text-tealcare-400"></i>
+              <span>Technology Architecture & Hackathon Stack</span>
+            </div>
+            <span class="text-[11px] font-mono text-slate-400">Beginner-Friendly & Modular</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-slate-300 mt-3">
+            <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
+              <div class="font-semibold text-white mb-1">Frontend</div>
+              <p>Vanilla JavaScript SPA, Tailwind CSS, Chart.js 4, FontAwesome 6. Zero build steps required; runs directly in any browser.</p>
+            </div>
+            <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
+              <div class="font-semibold text-white mb-1">Backend (Flask + SQLite)</div>
+              <p>Python Flask REST API with SQLite database (<code class="text-tealcare-300">smartcare.db</code>), CRUD endpoints for beds, patients, and scenario simulation.</p>
+            </div>
+            <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
+              <div class="font-semibold text-white mb-1">Simulation Engine</div>
+              <p>Deterministic state transitions for Normal Day, Busy Day, and Arrival Surge with live reactive KPIs and action audit trails.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 7: LAPTOP DATA STORAGE & EXPORT -->
+    <!-- ======================================================== -->
+    <section id="tab-data-storage" class="hidden space-y-6">
+      
+      <!-- HEADER BANNER -->
+      <div class="bg-gradient-to-r from-slate-900 via-clinical-900 to-tealcare-950 text-white p-6 rounded-2xl shadow-md">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="bg-tealcare-400 text-slate-900 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Separate Disk Storage</span>
+              <span class="text-xs text-tealcare-200">Local Filesystem Integration</span>
+            </div>
+            <h2 class="text-xl font-extrabold mt-1 tracking-tight">Laptop Data Storage & Export Center</h2>
+            <p class="text-xs text-slate-200 max-w-2xl mt-1">
+              Every admitted patient, bed allocation change, and clinical DSS recommendation is saved into separate, dedicated files directly on your laptop.
+            </p>
+            <div class="mt-3 flex items-center space-x-2 text-xs font-mono bg-black/40 px-3 py-1.5 rounded-lg border border-white/10 w-fit">
+              <i class="fa-solid fa-folder-open text-tealcare-400"></i>
+              <span class="text-slate-300">Disk Folder:</span>
+              <span class="text-tealcare-300 font-bold select-all">C:\Users\ukenthar.G\Desktop\smartcare-ai\data\</span>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="syncFromExcelFile(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-lg transition flex items-center space-x-2">
+              <i class="fa-solid fa-arrows-rotate"></i>
+              <span>Sync from Excel (patients.csv)</span>
+            </button>
+            <button onclick="document.getElementById('file-upload-excel').click()" class="bg-white/10 hover:bg-white/20 text-white font-semibold text-xs px-3 py-2.5 rounded-xl transition flex items-center space-x-1.5 border border-white/20">
+              <i class="fa-solid fa-file-arrow-up text-amber-400"></i>
+              <span>Upload Custom Sheet</span>
+            </button>
+            <button onclick="saveDataToLaptop(true)" class="bg-tealcare-500 hover:bg-tealcare-400 text-slate-950 font-bold text-xs px-4 py-2.5 rounded-xl shadow-lg transition flex items-center space-x-2">
+              <i class="fa-solid fa-floppy-disk"></i>
+              <span>Save to Laptop Now</span>
+            </button>
+            <button onclick="downloadPatientsCSV()" class="bg-white/10 hover:bg-white/20 text-white font-semibold text-xs px-3 py-2.5 rounded-xl transition flex items-center space-x-1.5 border border-white/20">
+              <i class="fa-solid fa-file-csv text-emerald-400"></i>
+              <span>Download CSV</span>
+            </button>
+            <button onclick="downloadFullJSON()" class="bg-white/10 hover:bg-white/20 text-white font-semibold text-xs px-3 py-2.5 rounded-xl transition flex items-center space-x-1.5 border border-white/20">
+              <i class="fa-solid fa-file-code text-sky-400"></i>
+              <span>Download JSON</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXCEL TWO-WAY SYNC WORKFLOW GUIDE -->
+      <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-xs">
+        <div class="flex items-center space-x-2 font-bold text-emerald-900 text-sm mb-2">
+          <i class="fa-solid fa-file-excel text-emerald-700 text-lg"></i>
+          <span>How Two-Way Excel Synchronization Works</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-emerald-800">
+          <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-xs">
+            <span class="font-bold text-emerald-900"><i class="fa-solid fa-pen-to-square text-emerald-600 mr-1"></i> Step 1: Open in Excel</span>
+            <p class="text-[11px] text-slate-600 mt-1">Open <code class="font-bold text-slate-800 bg-slate-100 px-1 rounded">smartcare-ai\data\patients.csv</code> on your laptop in Microsoft Excel.</p>
+          </div>
+          <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-xs">
+            <span class="font-bold text-emerald-900"><i class="fa-solid fa-plus text-emerald-600 mr-1"></i> Step 2: Add Any Patient Row</span>
+            <p class="text-[11px] text-slate-600 mt-1">Add Name, Age, Acuity ESI (1-5), and Complaint. Press <kbd class="bg-slate-100 px-1 rounded border">Ctrl + S</kbd> to save in Excel.</p>
+          </div>
+          <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-xs">
+            <span class="font-bold text-emerald-900"><i class="fa-solid fa-bolt text-amber-500 mr-1"></i> Step 3: Instant Live Reflection</span>
+            <p class="text-[11px] text-slate-600 mt-1">Click <strong>"Sync from Excel"</strong> above. Your new patient immediately appears in all live hospital tables, charts, and bed counts!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 FILE METRIC CARDS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- File 1: patients.csv -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Spreadsheet Format</span>
+              <i class="fa-solid fa-file-excel text-emerald-600 text-lg"></i>
+            </div>
+            <h3 class="font-bold text-slate-900 text-sm mt-2">patients.csv</h3>
+            <p class="text-[11px] text-slate-500 mt-1">Full patient roster with ID, MRN, Name, Acuity ESI, Chief Complaint, and Bed ID.</p>
+          </div>
+          <div class="mt-4 pt-2 border-t border-slate-100 flex items-center justify-between">
+            <span id="storage-patient-count" class="text-xs font-mono font-bold text-slate-700">-- Records</span>
+            <button onclick="downloadPatientsCSV()" class="text-xs font-bold text-clinical-600 hover:text-clinical-800 flex items-center space-x-1">
+              <span>Export CSV</span> &rarr;
+            </button>
+          </div>
+        </div>
+
+        <!-- File 2: patients.json -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200">Machine Readable</span>
+              <i class="fa-solid fa-file-code text-sky-600 text-lg"></i>
+            </div>
+            <h3 class="font-bold text-slate-900 text-sm mt-2">patients.json</h3>
+            <p class="text-[11px] text-slate-500 mt-1">Structured JSON schema containing the active inpatient and emergency cohort.</p>
+          </div>
+          <div class="mt-4 pt-2 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs font-mono font-bold text-slate-700">JSON Format</span>
+            <button onclick="downloadFullJSON()" class="text-xs font-bold text-clinical-600 hover:text-clinical-800 flex items-center space-x-1">
+              <span>Export JSON</span> &rarr;
+            </button>
+          </div>
+        </div>
+
+        <!-- File 3: action_logs.csv -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">Clinical Audit</span>
+              <i class="fa-solid fa-clipboard-list text-purple-600 text-lg"></i>
+            </div>
+            <h3 class="font-bold text-slate-900 text-sm mt-2">action_logs.csv</h3>
+            <p class="text-[11px] text-slate-500 mt-1">Chronological audit trail of all executed recommendations, bed reallocations, and discharges.</p>
+          </div>
+          <div class="mt-4 pt-2 border-t border-slate-100 flex items-center justify-between">
+            <span id="storage-log-count" class="text-xs font-mono font-bold text-slate-700">-- Actions</span>
+            <button onclick="downloadLogsCSV()" class="text-xs font-bold text-clinical-600 hover:text-clinical-800 flex items-center space-x-1">
+              <span>Export Logs</span> &rarr;
+            </button>
+          </div>
+        </div>
+
+        <!-- File 4: hospital_summary.json -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Operations Summary</span>
+              <i class="fa-solid fa-chart-simple text-amber-600 text-lg"></i>
+            </div>
+            <h3 class="font-bold text-slate-900 text-sm mt-2">hospital_summary.json</h3>
+            <p class="text-[11px] text-slate-500 mt-1">Real-time occupancy rates, bottleneck indices, and scenario parameters.</p>
+          </div>
+          <div class="mt-4 pt-2 border-t border-slate-100 flex items-center justify-between">
+            <span id="storage-sync-status" class="text-[11px] font-mono font-bold text-emerald-600">Synced to Disk</span>
+            <button onclick="saveDataToLaptop(true)" class="text-xs font-bold text-clinical-600 hover:text-clinical-800 flex items-center space-x-1">
+              <span>Sync Now</span> &rarr;
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SPREADSHEET PREVIEW TABLE -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center space-x-2">
+              <i class="fa-solid fa-table text-clinical-600"></i>
+              <h3 class="font-bold text-slate-900 text-sm">Laptop File Live Preview: patients.csv</h3>
+            </div>
+            <p class="text-xs text-slate-500">Live view of the records stored in your laptop's <code class="text-clinical-700">smartcare-ai/data/patients.csv</code></p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="downloadPatientsCSV()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition">
+              <i class="fa-solid fa-download mr-1"></i> Download for Excel (.csv)
+            </button>
+          </div>
+        </div>
+        <div class="overflow-x-auto max-h-80">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="sticky top-0 bg-slate-50 border-b border-slate-200 text-slate-600 font-mono text-[11px]">
+              <tr>
+                <th class="py-2.5 px-3">ID</th>
+                <th class="py-2.5 px-3">MRN</th>
+                <th class="py-2.5 px-3">Patient Name</th>
+                <th class="py-2.5 px-3">Age</th>
+                <th class="py-2.5 px-3">ESI</th>
+                <th class="py-2.5 px-3">Chief Complaint</th>
+                <th class="py-2.5 px-3">Department</th>
+                <th class="py-2.5 px-3">Bed ID</th>
+                <th class="py-2.5 px-3">Stage</th>
+                <th class="py-2.5 px-3">Discharge Ready</th>
+              </tr>
+            </thead>
+            <tbody id="csv-preview-tbody" class="divide-y divide-slate-100 font-mono text-[11px]">
+              <!-- Dynamically rendered -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 1: SIMULATE PATIENT ADMISSION -->
+  <!-- ======================================================== -->
+  <div id="modal-admit" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div class="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-user-plus text-clinical-600"></i>
+          <h3 class="font-bold text-slate-900 text-sm">Simulate Patient Influx / Admission</h3>
+        </div>
+        <button onclick="closeAdmitModal()" class="text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+      </div>
+      <form onsubmit="handleAdmitPatient(event)" class="p-5 space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Patient Name</label>
+          <input type="text" id="input-patient-name" required value="Marcus Vance" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:border-clinical-600">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Age</label>
+            <input type="number" id="input-patient-age" required value="54" min="1" max="110" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:border-clinical-600">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Acuity (ESI Triage)</label>
+            <select id="input-patient-esi" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:border-clinical-600">
+              <option value="1">ESI-1: Resuscitation (Immediate)</option>
+              <option value="2">ESI-2: Emergent / High Risk</option>
+              <option value="3" selected>ESI-3: Urgent / Moderate</option>
+              <option value="4">ESI-4: Less Urgent</option>
+              <option value="5">ESI-5: Non-Urgent</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Chief Clinical Complaint</label>
+          <input type="text" id="input-patient-complaint" required value="Sudden onset severe chest tightness and dyspnea" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:border-clinical-600">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Receiving Department</label>
+          <select id="input-patient-dept" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:border-clinical-600">
+            <option value="Emergency">Emergency Department (ED)</option>
+            <option value="Inpatient">General Inpatient Admission</option>
+            <option value="Critical Care">Intensive Care Unit (ICU)</option>
+            <option value="Ambulatory">Short-Stay Observation</option>
+          </select>
+        </div>
+        <div class="pt-3 border-t border-slate-100 flex justify-end space-x-2">
+          <button type="button" onclick="closeAdmitModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50 font-medium">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-clinical-600 hover:bg-clinical-700 text-white rounded-lg font-bold shadow-sm">Admit Patient</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 2: SMART BED MATCHING ASSISTANT -->
+  <!-- ======================================================== -->
+  <div id="modal-smart-match" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="p-4 bg-tealcare-700 text-white flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-bed text-tealcare-200"></i>
+          <h3 class="font-bold text-sm">Smart Bed Allocation & Clinical Matcher</h3>
+        </div>
+        <button onclick="closeSmartMatchModal()" class="text-tealcare-200 hover:text-white text-lg">&times;</button>
+      </div>
+      <div class="p-5 space-y-4 text-xs">
+        <p class="text-slate-600">
+          Match incoming or transfer patients to clinically appropriate wards based on clinical acuity, telemetry requirements, and current ward load.
+        </p>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Acuity Level</label>
+            <select id="match-acuity" class="w-full border border-slate-300 rounded-lg p-2 text-slate-800">
+              <option value="high">Critical / High Acuity (ICU/ED)</option>
+              <option value="moderate" selected>Moderate Acuity (Med/Surg)</option>
+              <option value="low">Low Acuity / Short-Stay (Observation)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Telemetry Required?</label>
+            <select id="match-telemetry" class="w-full border border-slate-300 rounded-lg p-2 text-slate-800">
+              <option value="yes">Yes (Continuous Cardiac)</option>
+              <option value="no" selected>No (Standard Vitals)</option>
+            </select>
+          </div>
+        </div>
+
+        <button onclick="calculateSmartBedMatch()" class="w-full py-2 bg-tealcare-600 hover:bg-tealcare-700 text-white font-bold rounded-lg transition shadow-sm">
+          Find Optimal Ward & Bed
+        </button>
+
+        <!-- Match Result Container -->
+        <div id="match-result-container" class="hidden p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 3: BED DETAILS & ACTION MODAL -->
+  <!-- ======================================================== -->
+  <div id="modal-bed-details" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-bed text-clinical-600"></i>
+          <h3 id="modal-bed-title" class="font-bold text-slate-900 text-sm">Bed MED-A-04 Details</h3>
+        </div>
+        <button onclick="closeBedModal()" class="text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+      </div>
+      <div id="modal-bed-content" class="p-5 text-xs space-y-3">
+        <!-- Dynamically populated -->
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center space-x-2">
+        <span class="font-bold text-slate-800">SmartCare AI</span>
+        <span>&bull; Hackathon Project: "Overcrowded Hospitals, Limited Resources: Doing More With What Exists"</span>
+      </div>
+      <div class="flex items-center space-x-3 text-[11px]">
+        <span class="text-slate-400">Powered by Little's Law Queue Modeling & Heuristic Resource Balancer</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======================================================== -->
+  <!-- APPLICATION LOGIC & DATA ENGINE -->
+  <!-- ======================================================== -->
+  <script>
+    let currentScenario = 'normal';
+    let currentTab = 'overview';
+    let isFlaskApiMode = false;
+    let flaskApiUrl = 'http://127.0.0.1:5000/api';
+
+    let state = {
+      scenario: 'normal',
+      metrics: {},
+      forecast: [],
+      wards: [],
+      beds: [],
+      patients: [],
+      resources: [],
+      actionLogs: [],
+      recommendations: []
+    };
+
+    let arrivalChart = null;
+    let wardOccupancyChart = null;
+    let flowStagesChart = null;
+
+    let isLiveStreaming = true;
+    let liveStreamTimer = null;
+    let liveEventIndex = 0;
+    let activeHospitalKey = 'metro';
+
+    const hospitalProfiles = {
+      metro: {
+        name: "Metro General Hospital & Level-1 Trauma",
+        totalBeds: 320,
+        type: "Level-1 Urban Trauma Center",
+        bedDistribution: { ED: 50, ICU: 35, "MED-A": 55, "MED-B": 55, SURG: 50, OBS: 45, PED: 30 }
+      },
+      stjude: {
+        name: "St. Jude Community Medical Center",
+        totalBeds: 220,
+        type: "Suburban Community Healthcare",
+        bedDistribution: { ED: 35, ICU: 20, "MED-A": 45, "MED-B": 40, SURG: 35, OBS: 25, PED: 20 }
+      },
+      mercy: {
+        name: "Mercy Regional Specialty Care",
+        totalBeds: 180,
+        type: "Specialty Surgical & Oncology Hub",
+        bedDistribution: { ED: 25, ICU: 20, "MED-A": 35, "MED-B": 35, SURG: 40, OBS: 15, PED: 10 }
+      }
+    };
+
+    const telemetryEvents = [
+      "🚑 [AMB-108 ETA 3m] Code STEMI inbound to Trauma Bay 1 &bull; Cath lab pre-activated",
+      "🛏️ [EVS TURNOVER] Bed MED-A-12 terminal sanitization completed &bull; Status changed to Available",
+      "🧪 [STAT LAB] Critical Troponin I resulted for PAT-0012 &bull; Attending physician notified",
+      "📋 [DISCHARGE CLEARANCE] Attending physician signed discharge orders for Bed MED-B-08",
+      "🔬 [RADIOLOGY COMPLETE] CT Head without contrast completed on Scanner 1 &bull; ED queue advanced",
+      "🚑 [AMB-214 ETA 5m] Elderly fall with hip deformity inbound &bull; Triage ESI-3 designated",
+      "🩺 [BED ALLOCATION] Bed SURG-04 assigned to post-op recovery patient from OR Suite 3",
+      "🛏️ [EVS TURNOVER] Bed OBS-03 sanitized and inspected &bull; Inpatient holding bay unblocked",
+      "🧪 [BLOOD BANK] 2 units PRBCs matched and dispensed to ICU Bay 2",
+      "🚑 [AMB-119 ETA 4m] Severe acute dyspnea / COPD exacerbation inbound to Emergency",
+      "📋 [PHARMACY DISPENSE] Outpatient discharge medications verified for Bed MED-A-04",
+      "🔬 [IMAGING BALANCED] Stable inpatient non-contrast scan diverted to CT Scanner 2"
+    ];
+
+    // --- INITIALIZATION ---
+    window.addEventListener('DOMContentLoaded', () => {
+      startLiveClock();
+      checkBackendConnection();
+      loadScenarioData('normal');
+      startLiveStreaming();
+    });
+
+    function startLiveStreaming() {
+      if (liveStreamTimer) clearInterval(liveStreamTimer);
+      liveStreamTimer = setInterval(() => {
+        if (!isLiveStreaming) return;
+        advanceLiveTelemetryTick();
+      }, 5500);
+    }
+
+    function toggleLiveStreaming() {
+      isLiveStreaming = !isLiveStreaming;
+      const btnText = document.getElementById('live-stream-btn-text');
+      const btn = document.getElementById('btn-toggle-live-stream');
+      if (btnText && btn) {
+        if (isLiveStreaming) {
+          btn.className = 'flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold transition shadow-sm';
+          btnText.innerHTML = '🔴 LIVE STREAM: ACTIVE';
+          showToast('Live Feed Activated', 'Hospital real-time telemetry events and stream resumed.', 'info');
+        } else {
+          btn.className = 'flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold transition shadow-sm';
+          btnText.innerHTML = '⏸️ LIVE STREAM: PAUSED';
+          showToast('Live Feed Paused', 'Telemetry ticker paused. Manual actions still fully operational.', 'info');
+        }
+      }
+    }
+
+    function advanceLiveTelemetryTick() {
+      liveEventIndex = (liveEventIndex + 1) % telemetryEvents.length;
+      const eventText = telemetryEvents[liveEventIndex];
+      const tickerEl = document.getElementById('live-telemetry-ticker');
+      if (tickerEl) {
+        tickerEl.style.opacity = '0';
+        setTimeout(() => {
+          tickerEl.innerHTML = eventText;
+          tickerEl.style.opacity = '1';
+        }, 200);
+      }
+
+      if (Math.random() < 0.4) {
+        const delta = Math.random() > 0.5 ? 1 : -1;
+        state.metrics.avg_wait_emergency_mins = Math.max(18, state.metrics.avg_wait_emergency_mins + delta);
+        const waitEl = document.getElementById('card-wait-ed');
+        if (waitEl) waitEl.innerHTML = `${state.metrics.avg_wait_emergency_mins} <span class="text-xs font-sans font-normal text-slate-500">m</span>`;
+      }
+
+      if (Math.random() < 0.25 && state.metrics.cleaning_beds > 2) {
+        let flipped = false;
+        state.beds.forEach(b => {
+          if (!flipped && b.status === 'Cleaning') {
+            b.status = 'Available';
+            state.metrics.cleaning_beds = Math.max(0, state.metrics.cleaning_beds - 1);
+            state.metrics.available_beds += 1;
+            flipped = true;
+          }
+        });
+        if (flipped) {
+          setText('card-avail-beds', state.metrics.available_beds);
+          setText('card-cleaning-beds', `${state.metrics.cleaning_beds} In Cleaning`);
+          setText('badge-avail-beds', `${state.metrics.available_beds} Free`);
+          setText('stat-pill-avail', state.metrics.available_beds);
+          setText('stat-pill-clean', state.metrics.cleaning_beds);
+        }
+      }
+    }
+
+    function switchHospitalFacility(facilityKey) {
+      activeHospitalKey = facilityKey;
+      const profile = hospitalProfiles[facilityKey] || hospitalProfiles.metro;
+      
+      state.metrics.total_beds = profile.totalBeds;
+      const occRate = currentScenario === 'surge' ? 0.96 : (currentScenario === 'busy' ? 0.88 : 0.77);
+      state.metrics.occupied_beds = Math.round(profile.totalBeds * occRate);
+      state.metrics.cleaning_beds = Math.round(profile.totalBeds * 0.06);
+      state.metrics.available_beds = Math.max(0, profile.totalBeds - state.metrics.occupied_beds - state.metrics.cleaning_beds);
+      state.metrics.occupancy_rate = Math.round((state.metrics.occupied_beds / profile.totalBeds) * 1000) / 10;
+
+      applyStateToUI();
+      saveDataToLaptop(false);
+
+      showToast('Facility Switched', `Monitoring ${profile.name} (${profile.totalBeds} Licensed Beds &bull; ${profile.type})`, 'success');
+    }
+
+    function startLiveClock() {
+      function update() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+        const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const el = document.getElementById('live-clock');
+        if (el) el.innerText = `${timeStr} | ${dateStr}`;
+      }
+      update();
+      setInterval(update, 1000);
+    }
+
+    async function checkBackendConnection() {
+      try {
+        const res = await fetch(`${flaskApiUrl}/system/health`, { method: 'GET', cache: 'no-cache' });
+        if (res.ok) {
+          isFlaskApiMode = true;
+          updateApiPill(true);
+        } else {
+          updateApiPill(false);
+        }
+      } catch (err) {
+        updateApiPill(false);
+      }
+    }
+
+    function updateApiPill(connected) {
+      const text = document.getElementById('api-status-text');
+      const dot = document.querySelector('#api-status-pill i');
+      if (connected) {
+        text.innerText = 'Connected: Flask API';
+        dot.className = 'fa-solid fa-circle text-[8px] text-emerald-500';
+      } else {
+        text.innerText = 'Client Simulator (Standalone)';
+        dot.className = 'fa-solid fa-circle text-[8px] text-tealcare-500';
+      }
+    }
+
+    function toggleApiMode() {
+      isFlaskApiMode = !isFlaskApiMode;
+      showToast('API Mode Switched', isFlaskApiMode ? 'Attempting to query local Flask server at http://127.0.0.1:5000' : 'Switched to self-contained in-browser simulation.', 'info');
+      updateApiPill(isFlaskApiMode);
+      loadScenarioData(currentScenario);
+    }
+
+    function setActiveTab(tabId) {
+      currentTab = tabId;
+      const tabs = ['overview', 'patient-flow', 'bed-management', 'resources', 'recommendations', 'data-storage', 'forecasting-model'];
+      
+      tabs.forEach(t => {
+        const sec = document.getElementById(`tab-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (sec) {
+          if (t === tabId) {
+            sec.classList.remove('hidden');
+          } else {
+            sec.classList.add('hidden');
+          }
+        }
+        if (btn) {
+          if (t === tabId) {
+            btn.className = 'tab-button active flex items-center space-x-2 py-2 px-3 border-b-2 border-clinical-600 text-clinical-600 font-semibold whitespace-nowrap';
+          } else {
+            btn.className = 'tab-button flex items-center space-x-2 py-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap';
+          }
+        }
+      });
+
+      if (tabId === 'overview') {
+        renderArrivalChart();
+        renderWardChart();
+      } else if (tabId === 'patient-flow') {
+        renderFlowStagesChart();
+        renderPatientsTable();
+      } else if (tabId === 'bed-management') {
+        renderBedMatrix();
+      } else if (tabId === 'resources') {
+        renderResourcesTab();
+      } else if (tabId === 'recommendations') {
+        renderRecommendationsTab();
+      } else if (tabId === 'data-storage') {
+        renderDataStorageTab();
+      }
+    }
+
+    async function switchScenario(scenario) {
+      currentScenario = scenario;
+      
+      ['normal', 'busy', 'surge'].forEach(s => {
+        const btn = document.getElementById(`scenario-btn-${s}`);
+        if (btn) {
+          if (s === scenario) {
+            btn.className = `scenario-pill flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 bg-white ${
+              s === 'normal' ? 'text-emerald-700 border-emerald-300' : s === 'busy' ? 'text-amber-700 border-amber-300' : 'text-rose-700 border-rose-300'
+            } shadow-sm border`;
+          } else {
+            btn.className = 'scenario-pill flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition-all duration-200';
+          }
+        }
+      });
+
+      await loadScenarioData(scenario);
+
+      showToast(
+        `Scenario Switched: ${scenario.toUpperCase()}`,
+        `Hospital operations parameters dynamically re-calculated for ${scenario} day scenario.`,
+        scenario === 'normal' ? 'success' : scenario === 'busy' ? 'warning' : 'critical'
+      );
+    }
+
+    async function loadScenarioData(scenario) {
+      generateLocalScenarioData(scenario);
+      applyStateToUI();
+    }
+
+    function generateLocalScenarioData(scenario) {
+      state.scenario = scenario;
+
+      const scenarioConfigs = {
+        normal: {
+          name: "Normal Day",
+          description: "Baseline hospital flow with steady arrival rates and typical ward turnaround. Resources operating within target tolerances.",
+          total_beds: 280,
+          occupied_beds: 218,
+          cleaning_beds: 14,
+          reserved_beds: 8,
+          available_beds: 40,
+          expected_arrivals_24h: 142,
+          expected_arrivals_next_4h: 28,
+          avg_wait_emergency_mins: 34,
+          avg_wait_triage_mins: 8,
+          avg_wait_diagnostics_mins: 26,
+          avg_wait_bed_placement_mins: 48,
+          occupancy_rate: 77.8,
+          status_level: 'Stable',
+          bottlenecks: [
+            {
+              id: "BN-1",
+              department: "Radiology (CT-1)",
+              severity: "Moderate",
+              reason: "Routine outpatient & ED scan overlap causing minor queue of 4 patients.",
+              dwell_time: "25 mins"
+            }
+          ],
+          alerts: [
+            {
+              id: "ALT-01",
+              level: "info",
+              title: "Hospital Flow Optimal",
+              message: "Clinical staffing ratios and bed turnaround velocities are within nominal guidelines. 40 acute beds available hospital-wide."
+            }
+          ],
+          recommendations: [
+            {
+              id: "REC-01",
+              title: "Expedite Morning Discharge Clearance",
+              department: "General Medicine A & B",
+              impact: "Frees 6 inpatient beds within 90 minutes",
+              action_label: "Trigger Discharge Huddle",
+              safety_check: "Clinically safe: 6 patients already marked medically stable by attending physicians.",
+              type: "discharge",
+              executed: false
+            },
+            {
+              id: "REC-02",
+              title: "Schedule Turnaround for 8 Cleaning Beds",
+              department: "Environmental Services",
+              impact: "Restores 8 beds to available inventory within 30 mins",
+              action_label: "Dispatch EVS Squad",
+              safety_check: "Logistics action only: No direct clinical risk.",
+              type: "turnaround",
+              executed: false
+            }
+          ]
+        },
+        busy: {
+          name: "Busy Day",
+          description: "Elevated patient inflow with localized boarding in Emergency and radiology backlog. Capacity strain approaching threshold.",
+          total_beds: 280,
+          occupied_beds: 248,
+          cleaning_beds: 18,
+          reserved_beds: 6,
+          available_beds: 8,
+          expected_arrivals_24h: 210,
+          expected_arrivals_next_4h: 46,
+          avg_wait_emergency_mins: 82,
+          avg_wait_triage_mins: 19,
+          avg_wait_diagnostics_mins: 64,
+          avg_wait_bed_placement_mins: 115,
+          occupancy_rate: 88.6,
+          status_level: 'Elevated Strain',
+          bottlenecks: [
+            {
+              id: "BN-1",
+              department: "Emergency Department (ED)",
+              severity: "High",
+              reason: "14 admitted patients boarding in ED bays awaiting inpatient bed assignment.",
+              dwell_time: "115 mins"
+            },
+            {
+              id: "BN-2",
+              department: "CT Scanner 1",
+              severity: "High",
+              reason: "7 emergency patients queued; avg delay 64 mins slowing clinical triage.",
+              dwell_time: "64 mins"
+            }
+          ],
+          alerts: [
+            {
+              id: "ALT-02",
+              level: "warning",
+              title: "Inpatient Bed Crunch (88.6% Occupied)",
+              message: "Only 8 free beds across acute wards. ED boarding is lengthening door-to-provider wait time."
+            },
+            {
+              id: "ALT-03",
+              level: "warning",
+              title: "Diagnostic Bottleneck: CT Suite",
+              message: "CT turnaround exceeded 60 min threshold. Consider routing stable scans to Inpatient CT-2."
+            }
+          ],
+          recommendations: [
+            {
+              id: "REC-03",
+              title: "Fast-Track 9 Ready Discharges",
+              department: "General Medicine & Surgery",
+              impact: "Instantly creates 9 inpatient beds for ED boarding patients",
+              action_label: "Authorize Fast-Track Discharges",
+              safety_check: "Physician signed orders in place; awaiting prescription dispenses.",
+              type: "discharge",
+              executed: false
+            },
+            {
+              id: "REC-04",
+              title: "Divert Stable CT Scans to Inpatient CT-2",
+              department: "Radiology & Imaging",
+              impact: "Cuts CT waiting time from 64 to 28 mins",
+              action_label: "Balance Radiology Queue",
+              safety_check: "Prioritizes ESI 1 & 2 trauma scans on Scanner 1.",
+              type: "radiology",
+              executed: false
+            },
+            {
+              id: "REC-05",
+              title: "Deploy Float Pool Nurse to ED Triage",
+              department: "Nursing Float Pool",
+              impact: "Reduces triage wait time from 19 to 9 mins",
+              action_label: "Reassign 2 Float Nurses",
+              safety_check: "Safe nurse ratio preserved in donor surgical unit (1:3.8).",
+              type: "staff",
+              executed: false
+            }
+          ]
+        },
+        surge: {
+          name: "Arrival Surge (Mass Inflow / Flu Spike)",
+          description: "Critical surge exceeding typical ward capacity, necessitating emergency dynamic reallocation.",
+          total_beds: 280,
+          occupied_beds: 269,
+          cleaning_beds: 9,
+          reserved_beds: 2,
+          available_beds: 0,
+          expected_arrivals_24h: 320,
+          expected_arrivals_next_4h: 78,
+          avg_wait_emergency_mins: 145,
+          avg_wait_triage_mins: 38,
+          avg_wait_diagnostics_mins: 95,
+          avg_wait_bed_placement_mins: 210,
+          occupancy_rate: 96.1,
+          status_level: 'Code Yellow Surge',
+          bottlenecks: [
+            {
+              id: "BN-1",
+              department: "Emergency Department (ED)",
+              severity: "Critical",
+              reason: "Severe bedlock: 26 patients boarding; hallway overflow initiated.",
+              dwell_time: "210 mins"
+            },
+            {
+              id: "BN-2",
+              department: "Intensive Care Unit (ICU)",
+              severity: "Critical",
+              reason: "100% capacity reached (30/30 beds). 3 critical step-down patients awaiting transfer.",
+              dwell_time: "140 mins"
+            },
+            {
+              id: "BN-3",
+              department: "Laboratory & Stat Blood Bank",
+              severity: "High",
+              reason: "18 urgent specimen backlogs.",
+              dwell_time: "50 mins"
+            }
+          ],
+          alerts: [
+            {
+              id: "ALT-04",
+              level: "critical",
+              title: "Code Yellow: Capacity Emergency",
+              message: "Zero available beds in acute wards. Dynamic overflow capacity required immediately."
+            },
+            {
+              id: "ALT-05",
+              level: "critical",
+              title: "Critical ICU Bedlock",
+              message: "Transfer 3 stabilized ICU patients to Step-Down ward to free critical resuscitation bays."
+            }
+          ],
+          recommendations: [
+            {
+              id: "REC-06",
+              title: "Dynamic Bed Flex: Convert 12 Observation Beds to Inpatient",
+              department: "Short-Stay Observation Unit",
+              impact: "Absorbs 12 boarding patients immediately, unblocking ED bays",
+              action_label: "Execute Surge Bed Flex",
+              safety_check: "Observation patients triaged to ambulatory monitoring.",
+              type: "bed_flex",
+              executed: false
+            },
+            {
+              id: "REC-07",
+              title: "Step Down 3 Stable ICU Patients",
+              department: "Critical Care & Step-Down",
+              impact: "Frees 3 ICU resuscitation beds for incoming ESI-1 transfers",
+              action_label: "Execute ICU De-escalation",
+              safety_check: "Patient vitals stable > 18h off vasopressors.",
+              type: "icu_transfer",
+              executed: false
+            },
+            {
+              id: "REC-08",
+              title: "Rapid Discharge Lounge Activation",
+              department: "Hospital Transit Center",
+              impact: "Frees 14 inpatient beds by moving discharged patients to transit lounge",
+              action_label: "Open Discharge Transit Hub",
+              safety_check: "Full clinical handover completed.",
+              type: "discharge",
+              executed: false
+            }
+          ]
+        }
+      };
+
+      state.metrics = scenarioConfigs[scenario] || scenarioConfigs.normal;
+
+      const mult = scenario === 'surge' ? 2.2 : scenario === 'busy' ? 1.45 : 1.0;
+      const baselineHourly = [
+        2.5, 1.8, 1.2, 1.0, 1.5, 2.8, 4.5, 6.2, 8.5, 9.8, 10.5, 11.2,
+        10.8, 9.5, 8.8, 8.2, 9.0, 10.1, 9.4, 7.8, 6.2, 4.8, 3.5, 2.9
+      ];
+      const curHour = new Date().getHours();
+      state.forecast = [];
+      for (let i = 0; i < 24; i++) {
+        const h = (curHour + i) % 24;
+        const expected = Math.round(baselineHourly[h] * mult * 10) / 10;
+        const ci_lower = Math.max(0, Math.round(expected * 0.8 * 10) / 10);
+        const ci_upper = Math.round(expected * 1.25 * 10) / 10;
+        const actual = i < 4 ? Math.round((expected + (Math.random() * 2 - 1)) * 10) / 10 : null;
+        state.forecast.push({
+          hour: `${h.toString().padStart(2, '0')}:00`,
+          expected_arrivals: expected,
+          actual_arrivals: actual,
+          ci_lower,
+          ci_upper
+        });
+      }
+
+      const wardRatios = {
+        normal: { ED: 0.73, ICU: 0.77, "MED-A": 0.82, "MED-B": 0.80, SURG: 0.70, OBS: 0.60, PED: 0.64 },
+        busy:   { ED: 0.91, ICU: 0.90, "MED-A": 0.94, "MED-B": 0.91, SURG: 0.85, OBS: 0.76, PED: 0.80 },
+        surge:  { ED: 0.98, ICU: 1.00, "MED-A": 0.98, "MED-B": 0.96, SURG: 0.90, OBS: 0.92, PED: 0.88 }
+      }[scenario];
+
+      const wardDefs = [
+        { id: "ED", name: "Emergency Department", dept: "Emergency", total: 45, ratio: "1:3", acuity: "High / Acute" },
+        { id: "ICU", name: "Intensive Care Unit", dept: "Critical Care", total: 30, ratio: "1:1", acuity: "Critical" },
+        { id: "MED-A", name: "General Medicine Ward A", dept: "Inpatient", total: 50, ratio: "1:5", acuity: "Moderate" },
+        { id: "MED-B", name: "General Medicine Ward B", dept: "Inpatient", total: 45, ratio: "1:5", acuity: "Moderate" },
+        { id: "SURG", name: "Surgical Recovery", dept: "Surgery", total: 40, ratio: "1:4", acuity: "Moderate-High" },
+        { id: "OBS", name: "Observation Unit", dept: "Ambulatory", total: 25, ratio: "1:6", acuity: "Low-Moderate" },
+        { id: "PED", name: "Pediatric Center", dept: "Pediatrics", total: 25, ratio: "1:4", acuity: "Variable" }
+      ];
+
+      state.wards = wardDefs.map(w => {
+        const occRate = wardRatios[w.id] || 0.75;
+        const occupied = Math.round(w.total * occRate);
+        const cleaning = scenario === 'normal' ? Math.max(1, Math.round(w.total * 0.05)) : Math.round(w.total * 0.08);
+        const available = Math.max(0, w.total - occupied - cleaning);
+        return {
+          id: w.id,
+          name: w.name,
+          department: w.dept,
+          total_beds: w.total,
+          occupied_beds: occupied,
+          cleaning_beds: cleaning,
+          available_beds: available,
+          occupancy_rate: Math.round((occupied / w.total) * 1000) / 10,
+          nurse_ratio: w.ratio,
+          acuity_level: w.acuity
+        };
+      });
+
+      state.beds = [];
+      state.patients = [];
+      let pCount = 1;
+
+      const sampleNames = ["David Patel", "Sarah Jenkins", "Robert Kim", "Maria Santos", "Ethan Hall", "Elena Rostova", "Grace O'Connor", "Samuel Green", "Aisha Khan", "Lucas Meyer", "Zoe Mitchell", "Arthur King", "Chloe Bennett", "Brian Murphy"];
+      const complaints = [
+        { esi: 1, c: "Acute STEMI / Ventricular Arrhythmia", stage: "Treatment" },
+        { esi: 2, c: "Acute Stroke Protocol / Hemiparesis", stage: "Diagnostics" },
+        { esi: 2, c: "Severe Sepsis secondary to Pyelonephritis", stage: "Treatment" },
+        { esi: 3, c: "COPD Exacerbation / Hypoxemia", stage: "Boarding" },
+        { esi: 3, c: "Acute Cholecystitis / Pre-op", stage: "Treatment" },
+        { esi: 4, c: "Cellulitis / IV Ceftriaxone Course", stage: "Discharge-Ready" },
+        { esi: 4, c: "Closed Fibula Fracture / Splinted", stage: "Discharge-Ready" },
+        { esi: 5, c: "Simple Suture Removal & Dressing", stage: "Discharge-Ready" }
+      ];
+
+      state.wards.forEach(w => {
+        for (let b = 1; b <= w.total_beds; b++) {
+          const bedId = `${w.id}-${b.toString().padStart(2, '0')}`;
+          let status = 'Available';
+          let patient = null;
+
+          if (b <= w.occupied_beds) {
+            status = 'Occupied';
+            const template = complaints[(pCount - 1) % complaints.length];
+            const pName = sampleNames[(pCount - 1) % sampleNames.length];
+            const isDischargeReady = (w.id.startsWith('MED') || w.id === 'OBS') && (b % 4 === 0);
+            
+            patient = {
+              id: `PAT-${pCount.toString().padStart(4, '0')}`,
+              mrn: `MRN-${910000 + pCount}`,
+              name: pName,
+              age: 28 + (pCount * 4) % 60,
+              esi_score: template.esi,
+              chief_complaint: template.c,
+              department: w.name,
+              bed_id: bedId,
+              current_stage: isDischargeReady ? 'Discharge-Ready' : template.stage,
+              discharge_ready: isDischargeReady ? 1 : 0,
+              admission_time: `${Math.max(1, (pCount % 48))}h ago`
+            };
+            state.patients.push(patient);
+            pCount++;
+          } else if (b <= w.occupied_beds + w.cleaning_beds) {
+            status = 'Cleaning';
+          }
+
+          state.beds.push({
+            id: bedId,
+            ward_id: w.id,
+            bed_number: b.toString(),
+            status: status,
+            patient: patient,
+            last_cleaned: status === 'Cleaning' ? '18 mins ago' : '5 hours ago'
+          });
+        }
+      });
+
+      state.resources = [
+        { id: "RES-CT1", name: "CT Scanner 1 (Emergency Dept)", category: "Equipment", status: scenario === 'surge' ? 'Busy' : (scenario === 'busy' ? 'Busy' : 'Operational'), queue_count: scenario === 'surge' ? 8 : (scenario === 'busy' ? 5 : 2), avg_cycle_mins: 25, utilization_rate: scenario === 'surge' ? 94 : (scenario === 'busy' ? 85 : 62) },
+        { id: "RES-CT2", name: "CT Scanner 2 (Inpatient Diagnostic)", category: "Equipment", status: 'Operational', queue_count: scenario === 'surge' ? 4 : 2, avg_cycle_mins: 25, utilization_rate: 68 },
+        { id: "RES-MRI", name: "MRI 3.0T Diagnostic Suite", category: "Equipment", status: 'Busy', queue_count: scenario === 'surge' ? 6 : 3, avg_cycle_mins: 45, utilization_rate: 88 },
+        { id: "RES-XRAY", name: "Stat Digital X-Ray Bay 1 & 2", category: "Equipment", status: 'Operational', queue_count: scenario === 'surge' ? 3 : 1, avg_cycle_mins: 15, utilization_rate: 58 },
+        { id: "RES-LAB", name: "Stat Automated Chemistry Lab", category: "Equipment", status: 'Operational', queue_count: scenario === 'surge' ? 14 : 6, avg_cycle_mins: 20, utilization_rate: scenario === 'surge' ? 91 : 75 }
+      ];
+
+      if (state.actionLogs.length === 0) {
+        state.actionLogs.unshift({
+          timestamp: new Date().toLocaleTimeString('en-US', { hour12: false }),
+          action: "SYSTEM_INITIALIZED",
+          desc: "SmartCare AI Operations Engine loaded with scenario dataset.",
+          impact: "Continuous queue and capacity telemetry monitoring active."
+        });
+      }
+    }
+
+    function applyStateToUI() {
+      const m = state.metrics;
+
+      const titleEl = document.getElementById('scenario-title');
+      const badgeEl = document.getElementById('scenario-badge');
+      const descEl = document.getElementById('scenario-desc');
+      const iconBox = document.getElementById('scenario-icon-box');
+
+      if (titleEl) titleEl.innerText = `Current Simulation: ${m.name}`;
+      if (descEl) descEl.innerText = m.description;
+      if (badgeEl) {
+        badgeEl.innerText = m.status_level || 'Active';
+        badgeEl.className = `text-[11px] font-bold px-2 py-0.5 rounded-full ${
+          currentScenario === 'normal' ? 'bg-emerald-100 text-emerald-800' : currentScenario === 'busy' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'
+        }`;
+      }
+      if (iconBox) {
+        iconBox.className = `w-10 h-10 rounded-lg flex items-center justify-center text-lg ${
+          currentScenario === 'normal' ? 'bg-emerald-100 text-emerald-700' : currentScenario === 'busy' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'
+        }`;
+        iconBox.innerHTML = currentScenario === 'normal' ? '<i class="fa-solid fa-circle-check"></i>' : currentScenario === 'busy' ? '<i class="fa-solid fa-triangle-exclamation"></i>' : '<i class="fa-solid fa-radiation animate-spin"></i>';
+      }
+
+      setText('stat-expected-4h', `+${m.expected_arrivals_next_4h} Patients`);
+      setText('stat-bottleneck-idx', currentScenario === 'normal' ? 'Low (1 Minor)' : currentScenario === 'busy' ? 'High (2 Bottlenecks)' : 'Critical (3 Red Alerts)');
+
+      setText('card-total-beds', m.total_beds);
+      setText('card-occupied-beds', m.occupied_beds);
+      setText('card-occupancy-pct', `${m.occupancy_rate}%`);
+      const occBar = document.getElementById('bar-occupancy');
+      if (occBar) {
+        occBar.style.width = `${m.occupancy_rate}%`;
+        occBar.className = `h-1.5 rounded-full transition-all duration-500 ${
+          m.occupancy_rate > 92 ? 'bg-rose-500' : m.occupancy_rate > 85 ? 'bg-amber-500' : 'bg-clinical-500'
+        }`;
+      }
+
+      setText('card-avail-beds', m.available_beds);
+      setText('card-cleaning-beds', `${m.cleaning_beds} In Cleaning`);
+      setText('card-expected-24h', m.expected_arrivals_24h);
+      setText('card-wait-ed', `${m.avg_wait_emergency_mins} `);
+      setText('card-wait-placement', `${m.avg_wait_bed_placement_mins} `);
+
+      const waitEdBadge = document.getElementById('badge-wait-ed-status');
+      if (waitEdBadge) {
+        if (m.avg_wait_emergency_mins > 90) {
+          waitEdBadge.className = 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-800';
+          waitEdBadge.innerText = 'High Delay';
+        } else if (m.avg_wait_emergency_mins > 45) {
+          waitEdBadge.className = 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800';
+          waitEdBadge.innerText = 'Elevated';
+        } else {
+          waitEdBadge.className = 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800';
+          waitEdBadge.innerText = 'Target <45m';
+        }
+      }
+
+      setText('badge-avail-beds', `${m.available_beds} Free`);
+      setText('badge-rec-count', `${m.recommendations ? m.recommendations.filter(r => !r.executed).length : 0} Active`);
+
+      setText('stat-pill-avail', m.available_beds);
+      setText('stat-pill-occ', m.occupied_beds);
+      setText('stat-pill-clean', m.cleaning_beds);
+      const dischargeReadyCount = state.patients.filter(p => p.discharge_ready === 1).length;
+      setText('stat-pill-discharge-ready', dischargeReadyCount);
+
+      renderAlerts();
+      renderBottlenecks();
+      renderOverviewRecommendations();
+      renderPipelineCounters();
+
+      renderArrivalChart();
+      renderWardChart();
+      renderFlowStagesChart();
+
+      if (currentTab === 'patient-flow') renderPatientsTable();
+      if (currentTab === 'bed-management') renderBedMatrix();
+      if (currentTab === 'resources') renderResourcesTab();
+      if (currentTab === 'recommendations') renderRecommendationsTab();
+    }
+
+    function setText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.innerText = text;
+    }
+
+    function renderAlerts() {
+      const container = document.getElementById('alerts-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const alerts = state.metrics.alerts || [];
+      alerts.forEach(a => {
+        const isCritical = a.level === 'critical';
+        const isWarning = a.level === 'warning';
+        const colorClass = isCritical 
+          ? 'bg-rose-50 border-rose-300 text-rose-900' 
+          : isWarning 
+          ? 'bg-amber-50 border-amber-300 text-amber-900' 
+          : 'bg-clinical-50 border-clinical-200 text-clinical-900';
+        
+        const icon = isCritical ? 'fa-triangle-exclamation text-rose-600' : isWarning ? 'fa-bell text-amber-600' : 'fa-circle-info text-clinical-600';
+
+        const div = document.createElement('div');
+        div.className = `p-3 rounded-xl border flex items-center justify-between text-xs font-medium ${colorClass}`;
+        div.innerHTML = `
+          <div class="flex items-center space-x-3">
+            <i class="fa-solid ${icon} text-base"></i>
+            <div>
+              <span class="font-bold uppercase tracking-wider text-[10px] mr-2">${a.title}:</span>
+              <span>${a.message}</span>
+            </div>
+          </div>
+          <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600 ml-2">&times;</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderBottlenecks() {
+      const list = document.getElementById('bottlenecks-list');
+      if (!list) return;
+      list.innerHTML = '';
+
+      const bottlenecks = state.metrics.bottlenecks || [];
+      if (bottlenecks.length === 0) {
+        list.innerHTML = `<div class="py-4 text-center text-xs text-slate-400">No active operational bottlenecks detected.</div>`;
+        return;
+      }
+
+      bottlenecks.forEach(b => {
+        const isCritical = b.severity === 'Critical';
+        const sevColor = isCritical ? 'bg-rose-100 text-rose-800 border-rose-200' : b.severity === 'High' ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-slate-100 text-slate-700 border-slate-200';
+        
+        const div = document.createElement('div');
+        div.className = 'py-3 flex items-start justify-between gap-3 text-xs';
+        div.innerHTML = `
+          <div class="space-y-0.5">
+            <div class="flex items-center space-x-2">
+              <span class="font-bold text-slate-900">${b.department}</span>
+              <span class="text-[10px] font-bold px-1.5 py-0.2 rounded border ${sevColor}">${b.severity}</span>
+            </div>
+            <p class="text-slate-600 text-[11px]">${b.reason}</p>
+          </div>
+          <div class="text-right whitespace-nowrap">
+            <span class="text-[10px] text-slate-400 block font-mono">Dwell Time</span>
+            <span class="font-mono font-bold text-slate-800">${b.dwell_time}</span>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function renderOverviewRecommendations() {
+      const list = document.getElementById('overview-rec-list');
+      if (!list) return;
+      list.innerHTML = '';
+
+      const recs = state.metrics.recommendations || [];
+      recs.slice(0, 2).forEach(r => {
+        const div = document.createElement('div');
+        div.className = `p-3 rounded-xl border ${r.executed ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-slate-200 hover:border-clinical-400'} shadow-sm transition`;
+        div.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="font-bold text-slate-900 text-xs">${r.title}</span>
+                <span class="text-[10px] text-slate-500 font-medium">(${r.department})</span>
+              </div>
+              <p class="text-[11px] text-emerald-700 font-semibold mt-1"><i class="fa-solid fa-arrow-trend-up mr-1"></i> ${r.impact}</p>
+            </div>
+            <button onclick="executeRecommendation('${r.id}')" ${r.executed ? 'disabled' : ''} class="px-3 py-1.5 rounded-lg text-xs font-bold ${r.executed ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-clinical-600 hover:bg-clinical-700 text-white shadow-sm'} transition">
+              ${r.executed ? '<i class="fa-solid fa-check mr-1"></i> Done' : r.action_label}
+            </button>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function renderPipelineCounters() {
+      const arrival = state.patients.filter(p => p.current_stage === 'Triage' || p.current_stage === 'Arrival').length || 12;
+      const diag = state.patients.filter(p => p.current_stage === 'Diagnostics').length || 18;
+      const treat = state.patients.filter(p => p.current_stage === 'Treatment').length || 34;
+      const board = state.patients.filter(p => p.current_stage === 'Boarding').length || 14;
+
+      setText('pipe-count-arrival', arrival);
+      setText('pipe-count-diag', diag);
+      setText('pipe-count-treat', treat);
+      setText('pipe-count-board', board);
+      setText('badge-flow-count', arrival + diag + treat + board);
+
+      const e1 = state.patients.filter(p => p.esi_score === 1).length;
+      const e2 = state.patients.filter(p => p.esi_score === 2).length;
+      const e3 = state.patients.filter(p => p.esi_score === 3).length;
+      const e4 = state.patients.filter(p => p.esi_score === 4).length;
+      const e5 = state.patients.filter(p => p.esi_score === 5).length;
+      setText('esi-count-1', `${e1 || 2} Patients`);
+      setText('esi-count-2', `${e2 || 9} Patients`);
+      setText('esi-count-3', `${e3 || 22} Patients`);
+      setText('esi-count-4', `${e4 || 14} Patients`);
+      setText('esi-count-5', `${e5 || 6} Patients`);
+    }
+
+    function renderArrivalChart() {
+      const ctx = document.getElementById('chart-arrival-forecast');
+      if (!ctx) return;
+
+      const labels = state.forecast.map(f => f.hour);
+      const expectedData = state.forecast.map(f => f.expected_arrivals);
+      const actualData = state.forecast.map(f => f.actual_arrivals);
+      const ciUpper = state.forecast.map(f => f.ci_upper);
+      const ciLower = state.forecast.map(f => f.ci_lower);
+
+      if (arrivalChart) arrivalChart.destroy();
+
+      arrivalChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Historical Actual Arrivals',
+              data: actualData,
+              borderColor: '#10b981',
+              backgroundColor: '#10b981',
+              borderWidth: 2,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              tension: 0.2
+            },
+            {
+              label: 'Predicted Demand',
+              data: expectedData,
+              borderColor: '#0284c7',
+              backgroundColor: 'rgba(2, 132, 199, 0.1)',
+              fill: true,
+              borderWidth: 2.5,
+              borderDash: [4, 4],
+              pointRadius: 2,
+              tension: 0.3
+            },
+            {
+              label: '95% Upper Bound',
+              data: ciUpper,
+              borderColor: 'rgba(148, 163, 184, 0.4)',
+              borderWidth: 1,
+              borderDash: [2, 2],
+              pointRadius: 0,
+              fill: false
+            },
+            {
+              label: '95% Lower Bound',
+              data: ciLower,
+              borderColor: 'rgba(148, 163, 184, 0.4)',
+              borderWidth: 1,
+              borderDash: [2, 2],
+              pointRadius: 0,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { mode: 'index', intersect: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: '#f1f5f9' },
+              title: { display: true, text: 'Patients / Hour', font: { size: 10 } }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { maxTicksLimit: 12, font: { size: 10 } }
+            }
+          }
+        }
+      });
+    }
+
+    function renderWardChart() {
+      const ctx = document.getElementById('chart-ward-occupancy');
+      if (!ctx) return;
+
+      const labels = state.wards.map(w => w.id);
+      const occupied = state.wards.map(w => w.occupied_beds);
+      const available = state.wards.map(w => w.available_beds);
+      const cleaning = state.wards.map(w => w.cleaning_beds);
+
+      if (wardOccupancyChart) wardOccupancyChart.destroy();
+
+      wardOccupancyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Occupied', data: occupied, backgroundColor: '#0369a1', borderRadius: 4 },
+            { label: 'In Cleaning', data: cleaning, backgroundColor: '#f59e0b', borderRadius: 4 },
+            { label: 'Available', data: available, backgroundColor: '#10b981', borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } },
+            tooltip: { mode: 'index' }
+          },
+          scales: {
+            x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 } } },
+            y: { stacked: true, grid: { color: '#f1f5f9' }, title: { display: true, text: 'Beds', font: { size: 10 } } }
+          }
+        }
+      });
+    }
+
+    function renderFlowStagesChart() {
+      const ctx = document.getElementById('chart-flow-stages');
+      if (!ctx) return;
+
+      const stages = ['Registration', 'Clinical Triage', 'Diagnostics / Imaging', 'Treatment Bay', 'Bed Placement'];
+      const targetTimes = [10, 10, 30, 45, 60];
+      const actualTimes = [
+        6,
+        state.metrics.avg_wait_triage_mins || 8,
+        state.metrics.avg_wait_diagnostics_mins || 26,
+        state.metrics.avg_wait_emergency_mins || 34,
+        state.metrics.avg_wait_bed_placement_mins || 48
+      ];
+
+      if (flowStagesChart) flowStagesChart.destroy();
+
+      flowStagesChart = new Chart(ctx, {
+        indexAxis: 'y',
+        type: 'bar',
+        data: {
+          labels: stages,
+          datasets: [
+            { label: 'Target Benchmark (mins)', data: targetTimes, backgroundColor: 'rgba(148, 163, 184, 0.4)', borderRadius: 4 },
+            { label: 'Current Estimated Wait (mins)', data: actualTimes, backgroundColor: currentScenario === 'surge' ? '#f43f5e' : (currentScenario === 'busy' ? '#f59e0b' : '#0284c7'), borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
+          scales: {
+            x: { grid: { color: '#f1f5f9' }, title: { display: true, text: 'Minutes', font: { size: 10 } } },
+            y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+          }
+        }
+      });
+    }
+
+    function renderPatientsTable() {
+      const tbody = document.getElementById('patient-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const stageFilter = document.getElementById('filter-patient-stage') ? document.getElementById('filter-patient-stage').value : 'all';
+      let filtered = state.patients;
+      if (stageFilter !== 'all') {
+        filtered = filtered.filter(p => p.current_stage === stageFilter);
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-slate-400">No patients currently in this stage.</td></tr>`;
+        return;
+      }
+
+      filtered.slice(0, 20).forEach(p => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
+
+        const esiClass = `badge-esi-${p.esi_score}`;
+        const isDischargeReady = p.discharge_ready === 1;
+
+        tr.innerHTML = `
+          <td class="py-2.5 px-4">
+            <div class="font-bold text-slate-900">${p.name}</div>
+            <div class="text-[10px] text-slate-400 font-mono">${p.mrn} &bull; Age ${p.age}</div>
+          </td>
+          <td class="py-2.5 px-4">
+            <span class="${esiClass} text-[10px] font-bold px-2 py-0.5 rounded font-mono">ESI-${p.esi_score}</span>
+          </td>
+          <td class="py-2.5 px-4 text-slate-700 max-w-xs truncate" title="${p.chief_complaint}">
+            ${p.chief_complaint}
+          </td>
+          <td class="py-2.5 px-4 text-slate-600">${p.department}</td>
+          <td class="py-2.5 px-4 font-mono font-semibold text-clinical-600">${p.bed_id || 'Waiting'}</td>
+          <td class="py-2.5 px-4">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${
+              isDischargeReady ? 'bg-purple-100 text-purple-800' : p.current_stage === 'Boarding' ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-700'
+            }">
+              ${p.current_stage}
+            </span>
+          </td>
+          <td class="py-2.5 px-4 font-mono text-slate-500">${p.admission_time}</td>
+          <td class="py-2.5 px-4 text-right">
+            ${
+              isDischargeReady 
+                ? `<button onclick="dischargePatientDirectly('${p.id}', '${p.bed_id}')" class="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-[11px] font-bold shadow-sm transition">Finalize Discharge</button>`
+                : `<button onclick="inspectPatient('${p.id}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[11px] font-medium transition">Inspect Flow</button>`
+            }
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderBedMatrix() {
+      const container = document.getElementById('bed-grid-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const wardFilter = document.getElementById('filter-bed-ward') ? document.getElementById('filter-bed-ward').value : 'all';
+      const statusFilter = document.getElementById('filter-bed-status') ? document.getElementById('filter-bed-status').value : 'all';
+
+      let filteredBeds = state.beds;
+      if (wardFilter !== 'all') filteredBeds = filteredBeds.filter(b => b.ward_id === wardFilter);
+      if (statusFilter !== 'all') filteredBeds = filteredBeds.filter(b => b.status === statusFilter);
+
+      if (filteredBeds.length === 0) {
+        container.innerHTML = `<div class="col-span-full text-center py-8 text-slate-400 text-xs">No beds match current filters.</div>`;
+        return;
+      }
+
+      filteredBeds.forEach(bed => {
+        const isOccupied = bed.status === 'Occupied';
+        const isCleaning = bed.status === 'Cleaning';
+        const isAvail = bed.status === 'Available';
+        const isDischargeReady = bed.patient && bed.patient.discharge_ready === 1;
+
+        let statusBg = isAvail ? 'bg-emerald-50 border-emerald-300' : isCleaning ? 'bg-amber-50 border-amber-300' : isDischargeReady ? 'bg-purple-50 border-purple-300' : 'bg-white border-slate-200';
+        let statusBadge = isAvail 
+          ? '<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800">Available</span>'
+          : isCleaning 
+          ? '<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800">Cleaning</span>'
+          : isDischargeReady 
+          ? '<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-purple-800">Discharge-Ready</span>'
+          : '<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-700">Occupied</span>';
+
+        const card = document.createElement('div');
+        card.className = `p-3 rounded-xl border ${statusBg} shadow-xs hover:shadow-md cursor-pointer transition flex flex-col justify-between text-xs`;
+        card.onclick = () => openBedModal(bed.id);
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="font-mono font-bold text-slate-900">${bed.id}</span>
+              ${statusBadge}
+            </div>
+            <div class="mt-2">
+              ${
+                bed.patient 
+                  ? `<div class="font-semibold text-slate-800 truncate">${bed.patient.name}</div>
+                     <div class="text-[10px] text-slate-500 truncate">${bed.patient.chief_complaint}</div>
+                     <div class="mt-1 flex items-center justify-between">
+                       <span class="badge-esi-${bed.patient.esi_score} text-[9px] px-1 rounded font-mono font-bold">ESI-${bed.patient.esi_score}</span>
+                       <span class="text-[10px] text-slate-400 font-mono">${bed.patient.admission_time}</span>
+                     </div>`
+                  : isCleaning 
+                  ? `<div class="text-[11px] text-amber-700 font-medium"><i class="fa-solid fa-broom mr-1"></i> EVS Turnaround</div>
+                     <div class="text-[10px] text-slate-400">Queue time: 14 mins</div>`
+                  : `<div class="text-[11px] text-emerald-700 font-medium"><i class="fa-solid fa-check mr-1"></i> Ready for Admission</div>
+                     <div class="text-[10px] text-slate-400">Sanitized & Inspected</div>`
+              }
+            </div>
+          </div>
+          <div class="mt-2 pt-1 border-t border-slate-100/60 flex items-center justify-between text-[10px] text-slate-400">
+            <span>Ward ${bed.ward_id}</span>
+            <span class="hover:text-clinical-600 font-bold">Manage &rarr;</span>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function renderResourcesTab() {
+      const container = document.getElementById('resources-list');
+      if (!container) return;
+      container.innerHTML = '';
+
+      state.resources.forEach(res => {
+        const isBusy = res.status === 'Busy';
+        const utilColor = res.utilization_rate > 90 ? 'text-rose-600' : res.utilization_rate > 80 ? 'text-amber-600' : 'text-emerald-600';
+        
+        const div = document.createElement('div');
+        div.className = 'py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs';
+        div.innerHTML = `
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="font-bold text-slate-900">${res.name}</span>
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${isBusy ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">${res.status}</span>
+            </div>
+            <div class="text-[11px] text-slate-500 mt-0.5">Average Scan/Test Cycle: <span class="font-mono font-semibold">${res.avg_cycle_mins} mins</span> &bull; Modality: ${res.category}</div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <div class="text-right">
+              <span class="text-[10px] text-slate-400 block font-mono">Current Queue</span>
+              <span class="text-sm font-mono font-black ${res.queue_count > 4 ? 'text-rose-600' : 'text-slate-800'}">${res.queue_count} Patients</span>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] text-slate-400 block font-mono">Utilization</span>
+              <span class="text-sm font-mono font-black ${utilColor}">${res.utilization_rate}%</span>
+            </div>
+            <button onclick="prioritizeResource('${res.id}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded text-xs transition">
+              Expedite
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderRecommendationsTab() {
+      const grid = document.getElementById('recommendations-full-grid');
+      const logList = document.getElementById('action-log-list');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      const recs = state.metrics.recommendations || [];
+      recs.forEach(r => {
+        const isExecuted = r.executed === true;
+        const card = document.createElement('div');
+        card.className = `p-5 rounded-2xl border ${isExecuted ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-slate-200 shadow-sm hover:border-clinical-500'} transition flex flex-col justify-between`;
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold px-2 py-0.5 rounded bg-clinical-50 text-clinical-700 border border-clinical-200">${r.department}</span>
+              ${isExecuted ? '<span class="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full"><i class="fa-solid fa-check mr-1"></i> Executed</span>' : '<span class="text-[11px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Action Available</span>'}
+            </div>
+            <h3 class="font-bold text-slate-900 text-sm mt-3">${r.title}</h3>
+            <p class="text-xs text-slate-600 mt-1">${r.safety_check}</p>
+            
+            <div class="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+              <div class="text-[11px] font-bold text-emerald-800 uppercase tracking-wide">Predicted Operational Impact</div>
+              <div class="text-xs font-semibold text-emerald-900 mt-0.5">${r.impact}</div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-[11px] text-slate-400 font-mono">Algorithm: Little's Law DSS</span>
+            <button onclick="executeRecommendation('${r.id}')" ${isExecuted ? 'disabled' : ''} class="px-4 py-2 rounded-xl text-xs font-bold ${
+              isExecuted ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-clinical-600 hover:bg-clinical-700 text-white shadow-md'
+            } transition">
+              ${isExecuted ? 'Action Completed' : r.action_label}
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      if (logList) {
+        logList.innerHTML = '';
+        state.actionLogs.forEach(l => {
+          const item = document.createElement('div');
+          item.className = 'py-2 flex items-start justify-between gap-3';
+          item.innerHTML = `
+            <div>
+              <span class="text-slate-400 mr-2">[${l.timestamp}]</span>
+              <span class="font-bold text-clinical-700">${l.action}:</span>
+              <span class="text-slate-700 ml-1">${l.desc}</span>
+            </div>
+            <span class="text-emerald-700 font-semibold text-[11px] whitespace-nowrap">${l.impact}</span>
+          `;
+          logList.appendChild(item);
+        });
+      }
+    }
+
+    function executeRecommendation(recId) {
+      const rec = (state.metrics.recommendations || []).find(r => r.id === recId);
+      if (!rec || rec.executed) return;
+
+      rec.executed = true;
+
+      if (rec.type === 'discharge') {
+        const freed = 6;
+        state.metrics.occupied_beds = Math.max(0, state.metrics.occupied_beds - freed);
+        state.metrics.available_beds += freed;
+        state.metrics.occupancy_rate = Math.round((state.metrics.occupied_beds / state.metrics.total_beds) * 1000) / 10;
+        state.metrics.avg_wait_bed_placement_mins = Math.max(20, state.metrics.avg_wait_bed_placement_mins - 28);
+        
+        let changed = 0;
+        state.beds.forEach(b => {
+          if (changed < freed && b.patient && b.patient.discharge_ready === 1) {
+            b.status = 'Cleaning';
+            b.patient = null;
+            changed++;
+          }
+        });
+      } else if (rec.type === 'turnaround') {
+        const cleaned = 8;
+        state.metrics.cleaning_beds = Math.max(0, state.metrics.cleaning_beds - cleaned);
+        state.metrics.available_beds += cleaned;
+        let count = 0;
+        state.beds.forEach(b => {
+          if (count < cleaned && b.status === 'Cleaning') {
+            b.status = 'Available';
+            count++;
+          }
+        });
+      } else if (rec.type === 'radiology') {
+        state.metrics.avg_wait_diagnostics_mins = Math.max(18, state.metrics.avg_wait_diagnostics_mins - 35);
+        const ct1 = state.resources.find(r => r.id === 'RES-CT1');
+        const ct2 = state.resources.find(r => r.id === 'RES-CT2');
+        if (ct1 && ct2) {
+          ct1.queue_count = Math.max(2, ct1.queue_count - 3);
+          ct2.queue_count += 3;
+          ct1.utilization_rate = 74;
+        }
+      } else if (rec.type === 'staff') {
+        state.metrics.avg_wait_triage_mins = Math.max(5, state.metrics.avg_wait_triage_mins - 10);
+        state.metrics.avg_wait_emergency_mins = Math.max(25, state.metrics.avg_wait_emergency_mins - 20);
+      } else if (rec.type === 'bed_flex' || rec.type === 'icu_transfer') {
+        state.metrics.available_beds += 5;
+        state.metrics.occupied_beds -= 3;
+        state.metrics.avg_wait_bed_placement_mins = Math.max(30, state.metrics.avg_wait_bed_placement_mins - 45);
+      }
+
+      state.actionLogs.unshift({
+        timestamp: new Date().toLocaleTimeString('en-US', { hour12: false }),
+        action: `EXEC_${recId}`,
+        desc: `Clinical DSS executed: "${rec.title}" in ${rec.department}.`,
+        impact: rec.impact
+      });
+
+      applyStateToUI();
+      showToast('Recommendation Executed', `${rec.title} executed successfully. ${rec.impact}`, 'success');
+    }
+
+    function applyAllRecommendations() {
+      const recs = state.metrics.recommendations || [];
+      recs.forEach(r => {
+        if (!r.executed) executeRecommendation(r.id);
+      });
+      showToast('All Recommendations Executed', 'Hospital capacity optimization protocol successfully applied across all departments.', 'success');
+    }
+
+    function cleanAllBeds() {
+      let count = 0;
+      state.beds.forEach(b => {
+        if (b.status === 'Cleaning') {
+          b.status = 'Available';
+          count++;
+        }
+      });
+      state.metrics.available_beds += count;
+      state.metrics.cleaning_beds = 0;
+
+      state.actionLogs.unshift({
+        timestamp: new Date().toLocaleTimeString('en-US', { hour12: false }),
+        action: 'EVS_RAPID_SWEEP',
+        desc: `Environmental Services completed terminal sanitization for ${count} beds.`,
+        impact: `Restored ${count} beds directly into available inventory.`
+      });
+
+      applyStateToUI();
+      showToast('EVS Cleanings Expedited', `${count} beds returned to available status!`, 'success');
+    }
+
+    function balanceRadiologyQueue() {
+      const ct1 = state.resources.find(r => r.id === 'RES-CT1');
+      const ct2 = state.resources.find(r => r.id === 'RES-CT2');
+      if (ct1 && ct2) {
+        const moved = Math.floor(ct1.queue_count / 2);
+        ct1.queue_count -= moved;
+        ct2.queue_count += moved;
+        state.metrics.avg_wait_diagnostics_mins = Math.max(20, state.metrics.avg_wait_diagnostics_mins - 22);
+
+        state.actionLogs.unshift({
+          timestamp: new Date().toLocaleTimeString('en-US', { hour12: false }),
+          action: 'RADIOLOGY_LOAD_BALANCE',
+          desc: `Diverted ${moved} inpatient scans from CT-1 to CT-2.`,
+          impact: 'Emergency scan turnaround expedited by 22 mins.'
+        });
+
+        applyStateToUI();
+        showToast('Radiology Queue Balanced', `Diverted ${moved} scans to Scanner 2. Emergency CT wait time reduced.`, 'success');
+      }
+    }
+
+    function deployFloatNurse() {
+      state.metrics.avg_wait_triage_mins = Math.max(6, state.metrics.avg_wait_triage_mins - 8);
+      state.actionLogs.unshift({
+        timestamp: new Date().toLocaleTimeString('en-US', { hour12: false }),
+        action: 'NURSING_FLOAT_DEPLOYED',
+        desc: 'Deployed float nurse from elective post-op recovery to ED triage bay 3.',
+        impact: 'Door-to-triage time reduced by 8 mins.'
+      });
+      applyStateToUI();
+      showToast('Float Nurse Deployed', 'Nursing coverage assigned to Emergency Triage.', 'success');
+    }
+
+    function prioritizeResource(resId) {
+      const res = state.resources.find(r => r.id === resId);
+      if (res) {
+        res.queue_count = Math.max(0, res.queue_count - 1);
+        showToast('Resource Expedited', `${res.name} scan queue prioritized. Next patient entering scanner.`, 'info');
+        renderResourcesTab();
+      }
+    }
+
+    function dischargePatientDirectly(patientId, bedId) {
+      const bed = state.beds.find(b => b.id === bedId);
+      if (bed) {
+        bed.status = 'Cleaning';
+        bed.patient = null;
+        state.metrics.occupied_beds = Math.max(0, state.metrics.occupied_beds - 1);
+        state.metrics.cleaning_beds += 1;
+        state.metrics.occupancy_rate = Math.round((state.metrics.occupied_beds / state.metrics.total_beds) * 1000) / 10;
+        
+        state.actionLogs.unshift({
+          timestamp: new Date().toLocaleTimeString('en-US', { hour12: false }),
+          action: 'PATIENT_DISCHARGED',
+          desc: `Patient discharged from bed ${bedId}. Bed queued for EVS turnover.`,
+          impact: 'Inpatient capacity recovered.'
+        });
+
+        applyStateToUI();
+        saveDataToLaptop(false);
+        showToast('Discharge Finalized', `Bed ${bedId} is now queued for cleaning.`, 'success');
+      }
+    }
+
+    function openAdmitModal() {
+      document.getElementById('modal-admit').classList.remove('hidden');
+    }
+    function closeAdmitModal() {
+      document.getElementById('modal-admit').classList.add('hidden');
+    }
+
+    function handleAdmitPatient(e) {
+      e.preventDefault();
+      const name = document.getElementById('input-patient-name').value;
+      const age = parseInt(document.getElementById('input-patient-age').value);
+      const esi = parseInt(document.getElementById('input-patient-esi').value);
+      const complaint = document.getElementById('input-patient-complaint').value;
+      const dept = document.getElementById('input-patient-dept').value;
+
+      const pId = `PAT-${(state.patients.length + 1).toString().padStart(4, '0')}`;
+      const newPatient = {
+        id: pId,
+        mrn: `MRN-${950000 + state.patients.length + 1}`,
+        name: name,
+        age: age,
+        esi_score: esi,
+        chief_complaint: complaint,
+        department: dept,
+        bed_id: null,
+        current_stage: esi <= 2 ? 'Treatment' : 'Triage',
+        discharge_ready: 0,
+        admission_time: 'Just now'
+      };
+
+      state.patients.unshift(newPatient);
+      state.metrics.expected_arrivals_next_4h += 1;
+
+      state.actionLogs.unshift({
+        timestamp: new Date().toLocaleTimeString('en-US', { hour12: false }),
+        action: 'PATIENT_ADMITTED',
+        desc: `Admitted ${name} (ESI-${esi}) to ${dept}.`,
+        impact: esi <= 2 ? 'High clinical priority: Escalated to trauma bay.' : 'Registered in triage queue.'
+      });
+
+      closeAdmitModal();
+      applyStateToUI();
+      saveDataToLaptop(false);
+      showToast('Patient Admitted', `${name} successfully evaluated and registered in ${dept} queue.`, esi <= 2 ? 'warning' : 'success');
+    }
+
+    function openSmartMatchModal() {
+      document.getElementById('modal-smart-match').classList.remove('hidden');
+      document.getElementById('match-result-container').classList.add('hidden');
+    }
+    function closeSmartMatchModal() {
+      document.getElementById('modal-smart-match').classList.add('hidden');
+    }
+
+    function calculateSmartBedMatch() {
+      const acuity = document.getElementById('match-acuity').value;
+      const tele = document.getElementById('match-telemetry').value;
+
+      let targetWard = 'MED-A';
+      let rationale = '';
+
+      if (acuity === 'high') {
+        targetWard = 'ICU';
+        rationale = 'Critical clinical status requires 1:1 nurse-to-patient ratio and dedicated hemodynamics.';
+      } else if (tele === 'yes') {
+        targetWard = 'SURG';
+        rationale = 'Continuous telemetry monitors available in Surgical Recovery / Step-Down.';
+      } else if (acuity === 'low') {
+        targetWard = 'OBS';
+        rationale = 'Stable ambulatory observation unit prevents unnecessary inpatient floor boarding.';
+      } else {
+        targetWard = state.wards.find(w => w.id === 'MED-A' && w.available_beds > 0) ? 'MED-A' : 'MED-B';
+        rationale = 'General Medical Floor A/B matched based on standard inpatient telemetry and physician rounding.';
+      }
+
+      const wardObj = state.wards.find(w => w.id === targetWard) || state.wards[0];
+      const availInWard = wardObj.available_beds;
+
+      const resBox = document.getElementById('match-result-container');
+      resBox.classList.remove('hidden');
+      resBox.innerHTML = `
+        <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+          <span class="font-bold text-slate-900 text-xs">Recommended Ward: ${wardObj.name} (${wardObj.id})</span>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded ${availInWard > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+            ${availInWard} Available Beds
+          </span>
+        </div>
+        <p class="text-[11px] text-slate-600 mt-1">${rationale}</p>
+        <div class="mt-2 text-[10px] font-mono text-slate-500">Nurse Ratio: ${wardObj.nurse_ratio} &bull; Clinical Acuity: ${wardObj.acuity_level}</div>
+        <button onclick="closeSmartMatchModal(); showToast('Bed Reservation', 'Reserved available bed in ${wardObj.id}', 'success');" class="mt-2 w-full py-1.5 bg-clinical-600 hover:bg-clinical-700 text-white rounded font-bold text-xs">
+          Reserve Bed in ${wardObj.id}
+        </button>
+      `;
+    }
+
+    function openBedModal(bedId) {
+      const bed = state.beds.find(b => b.id === bedId);
+      if (!bed) return;
+
+      const modal = document.getElementById('modal-bed-details');
+      document.getElementById('modal-bed-title').innerText = `Bed ${bed.id} Inspection`;
+
+      const content = document.getElementById('modal-bed-content');
+      content.innerHTML = `
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+          <div class="flex justify-between">
+            <span class="text-slate-500">Status:</span>
+            <span class="font-bold ${bed.status === 'Available' ? 'text-emerald-700' : bed.status === 'Cleaning' ? 'text-amber-700' : 'text-slate-900'}">${bed.status}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Ward:</span>
+            <span class="font-semibold text-slate-800">${bed.ward_id}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Last Sanitation:</span>
+            <span class="font-mono text-slate-600">${bed.last_cleaned}</span>
+          </div>
+        </div>
+
+        ${
+          bed.patient ? `
+            <div class="p-3 bg-clinical-50 rounded-xl border border-clinical-200 space-y-1.5">
+              <div class="text-[10px] uppercase font-bold text-clinical-700">Assigned Patient Profile</div>
+              <div class="font-bold text-slate-900 text-sm">${bed.patient.name} (${bed.patient.mrn})</div>
+              <div class="text-slate-600">Complaint: <strong>${bed.patient.chief_complaint}</strong></div>
+              <div class="flex items-center space-x-2 text-[10px]">
+                <span class="badge-esi-${bed.patient.esi_score} px-1.5 py-0.5 rounded font-mono font-bold">ESI-${bed.patient.esi_score}</span>
+                <span>Stage: ${bed.patient.current_stage}</span>
+              </div>
+            </div>
+            <div class="pt-2 flex space-x-2">
+              <button onclick="dischargePatientDirectly('${bed.patient.id}', '${bed.id}'); closeBedModal();" class="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold">
+                Authorize & Finalize Discharge
+              </button>
+            </div>
+          ` : bed.status === 'Cleaning' ? `
+            <button onclick="cleanSingleBed('${bed.id}'); closeBedModal();" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold">
+              Mark Cleaning Finished (Make Available)
+            </button>
+          ` : `
+            <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-center text-emerald-800">
+              <i class="fa-solid fa-check-circle text-2xl mb-1 text-emerald-600"></i>
+              <div class="font-bold">Bed Available & Sanitized</div>
+              <p class="text-[11px] mt-0.5">Ready for immediate placement from ED boarding or PACU.</p>
+            </div>
+          `
+        }
+      `;
+
+      modal.classList.remove('hidden');
+    }
+
+    function cleanSingleBed(bedId) {
+      const bed = state.beds.find(b => b.id === bedId);
+      if (bed) {
+        bed.status = 'Available';
+        state.metrics.cleaning_beds = Math.max(0, state.metrics.cleaning_beds - 1);
+        state.metrics.available_beds += 1;
+        applyStateToUI();
+        showToast('Bed Sanitized', `Bed ${bedId} is now marked Available.`, 'success');
+      }
+    }
+
+    function closeBedModal() {
+      document.getElementById('modal-bed-details').classList.add('hidden');
+    }
+
+    function inspectPatient(patientId) {
+      const p = state.patients.find(pt => pt.id === patientId);
+      if (p) {
+        showToast(`Patient ${p.name}`, `Assigned to ${p.department} &bull; Stage: ${p.current_stage}`, 'info');
+      }
+    }
+
+    async function saveDataToLaptop(showFeedback = true) {
+      const payload = {
+        scenario: currentScenario,
+        patients: state.patients,
+        beds: state.beds,
+        actionLogs: state.actionLogs,
+        metrics: state.metrics
+      };
+
+      try {
+        localStorage.setItem('smartcare_saved_patients', JSON.stringify(state.patients));
+        localStorage.setItem('smartcare_saved_logs', JSON.stringify(state.actionLogs));
+        localStorage.setItem('smartcare_saved_scenario', currentScenario);
+      } catch (err) {
+        console.warn('LocalStorage save failed:', err);
+      }
+
+      try {
+        const response = await fetch('http://127.0.0.1:5000/api/save-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          renderDataStorageTab();
+          if (showFeedback) {
+            showToast('Saved to Laptop Folder', 'Files written to: C:\\Users\\ukenthar.G\\Desktop\\smartcare-ai\\data\\', 'success');
+          }
+          return;
+        }
+      } catch (e) {
+        console.warn('Local server save failed, using client storage', e);
+      }
+
+      renderDataStorageTab();
+      if (showFeedback) {
+        showToast('Data Synced', 'Stored in browser memory and ready for direct CSV / JSON download.', 'info');
+      }
+    }
+
+    function renderDataStorageTab() {
+      const pCount = state.patients.length;
+      const lCount = state.actionLogs.length;
+
+      const pCountEl = document.getElementById('storage-patient-count');
+      if (pCountEl) pCountEl.innerText = `${pCount} Patients`;
+
+      const lCountEl = document.getElementById('storage-log-count');
+      if (lCountEl) lCountEl.innerText = `${lCount} Action Logs`;
+
+      const tbody = document.getElementById('csv-preview-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      state.patients.slice(0, 15).forEach(p => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
+        tr.innerHTML = `
+          <td class="py-2 px-3 text-slate-500 font-bold">${p.id}</td>
+          <td class="py-2 px-3 text-slate-500">${p.mrn}</td>
+          <td class="py-2 px-3 font-bold text-slate-800">${p.name}</td>
+          <td class="py-2 px-3 text-slate-600">${p.age}</td>
+          <td class="py-2 px-3 font-bold ${p.esi_score <= 2 ? 'text-rose-600' : 'text-slate-700'}">ESI-${p.esi_score}</td>
+          <td class="py-2 px-3 text-slate-600 max-w-xs truncate">${p.chief_complaint}</td>
+          <td class="py-2 px-3 text-slate-600">${p.department}</td>
+          <td class="py-2 px-3 text-clinical-600 font-bold">${p.bed_id || 'Waiting'}</td>
+          <td class="py-2 px-3 text-slate-700">${p.current_stage}</td>
+          <td class="py-2 px-3 ${p.discharge_ready === 1 ? 'text-purple-600 font-bold' : 'text-slate-400'}">${p.discharge_ready === 1 ? 'Yes' : 'No'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function downloadPatientsCSV() {
+      let csv = 'ID,MRN,Name,Age,ESI_Score,Chief_Complaint,Department,Bed_ID,Current_Stage,Discharge_Ready,Admission_Time\r\n';
+      state.patients.forEach(p => {
+        const cleanComp = (p.chief_complaint || '').replace(/"/g, '""');
+        csv += `"${p.id}","${p.mrn}","${p.name}",${p.age},${p.esi_score},"${cleanComp}","${p.department}","${p.bed_id || ''}","${p.current_stage}",${p.discharge_ready},"${p.admission_time}"\r\n`;
+      });
+
+      triggerFileDownload(csv, 'patients.csv', 'text/csv;charset=utf-8;');
+      showToast('Downloaded CSV', 'patients.csv saved directly to your Downloads folder.', 'success');
+    }
+
+    function downloadLogsCSV() {
+      let csv = 'Timestamp,Action,Description,Impact\r\n';
+      state.actionLogs.forEach(l => {
+        const cleanDesc = (l.desc || '').replace(/"/g, '""');
+        const cleanImp = (l.impact || '').replace(/"/g, '""');
+        csv += `"${l.timestamp}","${l.action}","${cleanDesc}","${cleanImp}"\r\n`;
+      });
+
+      triggerFileDownload(csv, 'hospital_action_logs.csv', 'text/csv;charset=utf-8;');
+      showToast('Downloaded CSV', 'hospital_action_logs.csv saved directly to your Downloads folder.', 'success');
+    }
+
+    function downloadFullJSON() {
+      const exportData = {
+        hospital_name: 'SmartCare AI Medical Center',
+        export_timestamp: new Date().toISOString(),
+        scenario: currentScenario,
+        metrics: state.metrics,
+        patients: state.patients,
+        beds: state.beds,
+        resources: state.resources,
+        action_logs: state.actionLogs
+      };
+
+      const jsonStr = JSON.stringify(exportData, null, 2);
+      triggerFileDownload(jsonStr, 'smartcare_complete_data.json', 'application/json;charset=utf-8;');
+      showToast('Downloaded JSON', 'smartcare_complete_data.json saved directly to your Downloads folder.', 'success');
+    }
+
+    function triggerFileDownload(content, filename, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    async function syncFromExcelFile(showToastNotice = true) {
+      try {
+        const res = await fetch('http://127.0.0.1:5000/api/read-excel-data');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.has_data && data.patients && data.patients.length > 0) {
+            state.patients = data.patients;
+            applyStateToUI();
+            renderDataStorageTab();
+            if (showToastNotice) {
+              showToast('Excel Data Synchronized', `Loaded ${data.count} patients directly from your laptop's Excel spreadsheet (patients.csv).`, 'success');
+            }
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Excel API fetch failed, checking fallback', err);
+      }
+
+      if (showToastNotice) {
+        showToast('Sync Notice', 'Could not reach server to load patients.csv. Check server on port 5000.', 'warning');
+      }
+    }
+
+    function handleExcelFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const text = e.target.result;
+        const lines = text.split(/\r\n|\n/).filter(line => line.trim().length > 0);
+        if (lines.length <= 1) {
+          showToast('Empty File', 'The uploaded CSV file contains no patient rows.', 'warning');
+          return;
+        }
+
+        const newPatients = [];
+        for (let i = 1; i < lines.length; i++) {
+          const parts = lines[i].split(',').map(s => s.trim().replace(/^"|"$/g, ''));
+          if (parts.length >= 3) {
+            newPatients.push({
+              id: parts[0] || `PAT-UPL-${i}`,
+              mrn: parts[1] || `MRN-${890000 + i}`,
+              name: parts[2] || 'Imported Patient',
+              age: parseInt(parts[3]) || 45,
+              esi_score: parseInt(parts[4]) || 3,
+              chief_complaint: parts[5] || 'Clinical Evaluation',
+              department: parts[6] || 'Emergency',
+              bed_id: parts[7] || 'Waiting',
+              current_stage: parts[8] || 'Treatment',
+              discharge_ready: parts[9] == '1' ? 1 : 0,
+              admission_time: parts[10] || 'Just now'
+            });
+          }
+        }
+
+        if (newPatients.length > 0) {
+          state.patients = newPatients;
+          applyStateToUI();
+      renderDataStorageTab();
+          saveDataToLaptop(false);
+          showToast('Excel Sheet Imported', `Successfully loaded ${newPatients.length} patients from ${file.name}!`, 'success');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function showToast(title, message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      const borderClass = type === 'success' ? 'border-emerald-500 bg-white text-slate-900' : type === 'warning' ? 'border-amber-500 bg-white text-slate-900' : type === 'critical' ? 'border-rose-500 bg-white text-slate-900' : 'border-clinical-500 bg-white text-slate-900';
+      const icon = type === 'success' ? 'fa-circle-check text-emerald-500' : type === 'warning' ? 'fa-triangle-exclamation text-amber-500' : type === 'critical' ? 'fa-radiation text-rose-500' : 'fa-circle-info text-clinical-500';
+
+      toast.className = `p-3 rounded-xl border shadow-xl flex items-start space-x-3 w-80 text-xs pointer-events-auto animate-in slide-in-from-right duration-200 ${borderClass}`;
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-base mt-0.5"></i>
+        <div class="flex-1">
+          <div class="font-bold text-slate-900">${title}</div>
+          <div class="text-[11px] text-slate-600 mt-0.5">${message}</div>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600">&times;</button>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        if (toast.parentElement) toast.remove();
+      }, 4500);
+    }
+  </script>
+</body>
+</html>
